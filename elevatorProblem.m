@@ -318,7 +318,7 @@ classdef elevatorProblem
                 weights = obj.shapes{q}.weights(); %%% SQUARED
             end
             
-            if type == "Matlab"
+            if type == "Matlab" || problem('squared') == "ones"
                 weights = weights * 0 + 1;
             end
             

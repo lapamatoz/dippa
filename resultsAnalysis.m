@@ -87,7 +87,7 @@ classdef resultsAnalysis
             else
                 videoFile = NaN;
             end
-            for r = 1:runs % use non-parallel for-loop for video!!
+            parfor r = 1:runs % use non-parallel for-loop for video!!
                 P = elevatorProblem;
                 P.box = box;
                 resTmp{L+r} = {};

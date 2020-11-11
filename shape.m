@@ -5,9 +5,10 @@ classdef shape
     properties
         position = [0;0];
         theta = 0;
-        width
-        height
-        type
+        width = 1;
+        height = 1;
+        type = "capsule"
+        static = false;
     end
     
     methods
@@ -56,7 +57,7 @@ classdef shape
                     out = rectIntersectArea(s1, s2);
                 end
             elseif isa(obj2, "capsRect")
-                out = obj2.intersectArea(obj1);
+                out = obj2.intersectArea(obj1,condition);
             end
             %if out < 4e-3 * obj1.shapeArea
             %    out = 0;
@@ -94,7 +95,7 @@ classdef shape
                             norm(B-P),...
                             norm(a-P),...
                             norm(b-P)]);
-                out = out + dist*100;
+                out = out + dist*1; % 100 tähän?
             end
             if out < 0
                 out = 0;
@@ -138,7 +139,7 @@ classdef shape
             end
         end
         
-        function h = drawShape(obj,filled, fillColor, strokeColor)
+        function h = drawShape(obj,filled, fillColor, strokeColor, strokeWidth)
             s = legacyCoordinates(obj);
             hold on
             rotationMatrix = [cos(s(5)), -sin(s(5)); sin(s(5)), cos(s(5))];
@@ -150,7 +151,7 @@ classdef shape
                 circlePoints = rotationMatrix * circlePoints;
                 if filled
                     h = fill(points(1,:)+s(3),points(2,:)+s(4),fillColor);
-                    h.LineWidth = 0.1;
+                    h.LineWidth = strokeWidth;
                     drawCircle(circlePoints(1,1)+s(3),circlePoints(2,1)+s(4),s(2),true, fillColor, strokeColor);
                     drawCircle(circlePoints(1,2)+s(3),circlePoints(2,2)+s(4),s(2),true, fillColor, strokeColor);
                 else
@@ -161,7 +162,7 @@ classdef shape
             elseif obj.type == "rectangle"
                 if filled
                     h = fill(points(1,:)+s(3),points(2,:)+s(4), fillColor);
-                    h.LineWidth = 0.1;
+                    h.LineWidth = strokeWidth; % 0.1
                 else
                     h = plot(points(1,:)+s(3),points(2,:)+s(4),'-','color',strokeColor);
                 end

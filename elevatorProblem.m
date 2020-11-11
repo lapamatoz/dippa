@@ -11,8 +11,11 @@ classdef elevatorProblem
     
     methods
         function obj = addShape(obj,shape)
-            l = length(obj.shapes);
-            obj.shapes{l+1} = shape;
+            ls = length(shape);
+            lo = length(obj.shapes);
+            for w = 1:ls
+                obj.shapes{lo+w} = shape(w);
+            end
         end
         
         function obj = createBox(obj,dimensions)
@@ -97,10 +100,12 @@ classdef elevatorProblem
                     ind = ind + 3;
                 else
                     initialX = objShapes{q}.capsule.legacyCoordinates();
-                    initialX = [initialX(3:5), objShapes{q}.rectangle.position];
+                    initialX = [initialX(3:5);...
+                        objShapes{q}.rectangle.position(1);...
+                        objShapes{q}.rectangle.position(2)];
                     initialX = (initialX.') .* weights;
                 
-                    [grad, f0, calcTmp] = triangleGrad(@(x)fun(x,q,weights), initialX, 1e-4, true);
+                    [grad, f0, calcTmp] = triangleGrad(@(x)fun(x,q,weights,problem), initialX, 1e-4, true);
                     objCalculations = objCalculations + calcTmp * numofcalc(obj,q,"objectWise");
                     
                     out(ind:(ind+4)) = grad; % joku kerroin ???
@@ -152,12 +157,12 @@ classdef elevatorProblem
             obj.data('HessianInv') = H;
             H1g = H*grad; H2g = H*H*grad; H3g=H*H*H*grad;
             fun = @(alpha)objectiveFunctionAll(obj, x - H1g*alpha, false, problem);
-            options = optimset('Display','off','MaxIter',6,'TolX',1e-5);
-            [a,fa,~,out] = fminbnd(fun,0,1.3,options);
+            options = optimset('Display','off','MaxIter',6,'TolX',1e-4);
+            [a,fa,~,out] = fminbnd(fun,0.1,1.4,options);
             obj.calculations = obj.calculations + out.funcCount * numofcalc(obj,NaN,"allCombOfTwo");
             fun = @(alpha)objectiveFunctionAll(obj, x - alpha*grad, false, problem);
             limit = 0.5;
-            options = optimset('Display','off','MaxIter',4,'TolX',1e-5);
+            options = optimset('Display','off','MaxIter',4,'TolX',1e-4);
             [aG,fG,~,out] = fminbnd(fun,0,2*limit,options);
             obj.calculations = obj.calculations + out.funcCount * numofcalc(obj,NaN,"allCombOfTwo");
             if fa < fG
@@ -227,6 +232,7 @@ classdef elevatorProblem
                 end
             end
             for q = 1:n
+                %obj.shapes{q}.intersectArea(obj.box, "no")
                 areaOutsideTheBox = obj.shapes{q}.shapeArea - obj.shapes{q}.intersectArea(obj.box, "no");
                 if abs(areaOutsideTheBox) / obj.shapes{q}.shapeArea < problem('solutionLimit')
                     areaOutsideTheBox = 0;
@@ -281,9 +287,9 @@ classdef elevatorProblem
                     obj.shapes{q}.theta       = x(ind+2);
                     ind = ind + 3;
                 else
-                    obj.shapes{q}.position(1)           = x(ind);
-                    obj.shapes{q}.position(2)           = x(ind+1);
-                    obj.shapes{q}.theta                 = x(ind+2);
+                    obj.shapes{q}.capsule.position(1)           = x(ind);
+                    obj.shapes{q}.capsule.position(2)           = x(ind+1);
+                    obj.shapes{q}.capsule.theta                 = x(ind+2);
                     obj.shapes{q}.rectangle.position(1) = x(ind+3);
                     obj.shapes{q}.rectangle.position(2) = x(ind+4);
                     ind = ind + 5;
@@ -301,6 +307,15 @@ classdef elevatorProblem
             obj.shapes = objTmp;
         end
         
+        function obj = findZeroGrad(obj,problem)
+            x = decisionVariablesFromProblem(obj);
+            [grad, obj] = fullGradient(obj,problem);
+            f0 = objectiveFunctionAll(obj, NaN, false, problem);
+            alpha = f0 / max(norm(grad)^2, 1e-3);
+            x = x - alpha*grad;
+            obj = obj.decisionVariablesToProblem(x);
+        end
+        
         function obj = optimizeCyclic(obj,type,problem)
             n = length(obj.shapes);
             
@@ -312,6 +327,11 @@ classdef elevatorProblem
                 q = 1;
                 k = 1;
             end
+            if obj.shapes{q}.static
+                obj.data("iterationIndex") = k;
+                return
+            end
+            
             if problem('squared') == "individual" || problem('squared') == "whole"
                 weights = obj.shapes{q}.weights().^2; %%% SQUARED
             else
@@ -410,14 +430,23 @@ classdef elevatorProblem
             end
             
             if obj.box.type == "rectangle"
-                obj.box.drawShape(true, [1,1,1], 'k');
+                obj.box.drawShape(true, [1,1,1], 'k', 1);
+                right = obj.box.width/2 + obj.box.position(1);
+                left = -obj.box.width/2 + obj.box.position(1);
+                height = obj.box.height/2 + obj.box.position(2);
+                hold on
+                green = [44,205,47]/255;
+                plot([left, right], [height,height], 'color', green, 'LineWidth', 1.2);
+                text(0, height + 0.9, "EXIT", 'color', green, 'FontSize',16, 'HorizontalAlignment', 'center');
+            elseif obj.box.type == "capsule"
+                obj.box.drawShape(true, [1,1,1], 'k', 1);
             end
             hold on
             for v = 1:n
-                obj.shapes{v}.drawShape(true, fillColor, strokeColor);
+                obj.shapes{v}.drawShape(true, fillColor, strokeColor, 0.1);
             end
             for v = 1:n
-                obj.shapes{v}.drawShape(false, fillColor, strokeColor);
+                obj.shapes{v}.drawShape(false, fillColor, strokeColor, 0.1);
             end
             hold on
             axis off

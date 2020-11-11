@@ -5,6 +5,7 @@ classdef capsRect
     properties
         capsule = shape;
         rectangle = shape; % theta = 0, position = [alpha,beta]
+        static = false;
     end
     
     methods
@@ -16,19 +17,19 @@ classdef capsRect
             q = [0;0];
             alpha = mod(obj.rectangle.position(1), 4*pi);
             beta = obj.rectangle.position(2);
-            if 0 <= alpha && alpha < pi
+            if 0 <= alpha && alpha <= pi
                 q(1) = (2*alpha/pi-1)*a + beta*aL;
                 q(2) = rL + r;
                 rho = 0;
-            elseif pi <= alpha && alpha < 2*pi
+            elseif pi <= alpha && alpha <= 2*pi
                 q(1) = a - (rL+r)*sin(alpha) - beta*aL*cos(alpha);
                 q(2) =   - (rL+r)*cos(alpha) + beta*aL*sin(alpha);
                 rho = pi - alpha;
-            elseif 2*pi <= alpha && alpha < 3*pi
+            elseif 2*pi <= alpha && alpha <= 3*pi
                 q(1) = (5-2*alpha/pi)*a - beta*aL;
                 q(2) = -r-rL;
                 rho = 0;
-            elseif 3*pi <= alpha && alpha < 4*pi
+            else
                 q(1) = -a + (rL + r)*sin(alpha) + beta*aL*cos(alpha);
                 q(2) =      (rL + r)*cos(alpha) - beta*aL*sin(alpha);
                 rho = pi - alpha;
@@ -75,10 +76,10 @@ classdef capsRect
             w(4:5) = [1,1];
         end
         
-        function drawShape(obj,filled, fillColor, strokeColor)
-            obj.capsule.drawShape(filled, fillColor, strokeColor);
+        function drawShape(obj,filled, fillColor, strokeColor, stroke)
+            obj.capsule.drawShape(filled, fillColor, strokeColor, stroke);
             rect = obj.rectangleCoordinates;
-            rect.drawShape(filled, fillColor, strokeColor);
+            rect.drawShape(filled, fillColor, strokeColor, stroke);
         end
     end
 end

@@ -1,6 +1,7 @@
 function [grad, f0, calculations] = triangleGrad(fun, x, h, zeroCondition)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
+parallel = false;
 calculations = 0;
 n = length(x);
 alpha = h/sqrt(2*n+2);
@@ -14,17 +15,36 @@ w0 = - (n-1)*w - w1;
 fA = fun(x + alpha);
 fB = zeros(1, n);
 
-for p = 1:n
-    e = zeros(1,n);
-    e(p) = 1;
-    fB(p) = fun(x + alphap + beta*e);
-    calculations = calculations + 1;
-    if zeroCondition && fB(p) == 0
-        f0 = 0;
-        grad = x + alphap + beta*e;
-        return
+if parallel
+    parfor p = 1:n
+        e = zeros(1,n);
+        e(p) = 1;
+        fB(p) = fun(x + alphap + beta*e);
+        calculations = calculations + 1;
+        %disp(alphap + beta*e)
     end
-    %disp(alphap + beta*e)
+    for p = 1:n
+        if zeroCondition && fB(p) == 0
+            e = zeros(1,n);
+            e(p) = 1;
+            f0 = 0;
+            grad = x + alphap + beta*e;
+            return
+        end
+    end
+else
+    for p = 1:n
+        e = zeros(1,n);
+        e(p) = 1;
+        fB(p) = fun(x + alphap + beta*e);
+        calculations = calculations + 1;
+        if zeroCondition && fB(p) == 0
+            f0 = 0;
+            grad = x + alphap + beta*e;
+            return
+        end
+        %disp(alphap + beta*e)
+    end
 end
 
 f0 = mean([fA, fB]);

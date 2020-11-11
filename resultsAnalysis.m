@@ -21,15 +21,15 @@ classdef resultsAnalysis
         end
         function obj = initialize(obj)
             box = shape;
-            box.height = 1700 / 100;
-            box.width = 2350 / 100;
+            box.height = 1350 / 100;
+            box.width = 1400 / 100;
             box.type = "rectangle";
             obj.problem("box") = box;
             
             obj.problem("shapesType") = "doubleType";
             s = capsRect;
-            s.capsule.height = 275 / 100*1.15;
-            s.capsule.width = 455 / 100*1.15;
+            s.capsule.height = 275 / 100;
+            s.capsule.width = 455 / 100;
             s.capsule.type = "capsule";
             s.rectangle.height = 275 * 0.8 / 100;
             s.rectangle.width = 455 * 0.8 / 100;
@@ -38,13 +38,23 @@ classdef resultsAnalysis
             %s.height = 4.4/1.4;
             %s.width = 6.4/1.4;
             %s.type = "rectangle";
-            obj.problem("shape1") = s.capsule;
+            obj.problem("shape1") = s;
             obj.problem("shape2") = s.capsule;
+            
+            r = shape;
+            r.type = "rectangle";
+            r.theta = 0;
+            r.static = true;
+            r.width = 63/10; r.height = 118/10;
+            r.position = [obj.problem("box").width/2  -  r.width/2,...
+                         -obj.problem("box").height/2 + r.height/2];
+            obj.problem("staticShape") = r;
             
             obj.problem("methodType") = "twinType";
             obj.problem("method1") = @(P,p)P.optimizeCyclic("triangleSubGrad",p);
-            %obj.problem("method2") = @(P,p)P.optimizeCyclic("Matlab",p);
-            obj.problem("method2") = @(P,p)P.optimizeBFGS(p);
+            obj.problem("method2") = @(P,p)P.optimizeCyclic("Matlab",p);
+            %obj.problem("method2") = @(P,p)P.optimizeBFGS(p);
+            %obj.problem("method2") = @(P,p)P.findZeroGrad(p);
             obj.problem("changeIter") = 0; % change at changeIter*n
             obj.problem("solutionLimit") = 1e-3;
             obj.problem("squared") = "no";
@@ -74,7 +84,7 @@ classdef resultsAnalysis
             obj.problem("changeIter") = 15; % change at changeIter*n
         end
         function obj = simulate(obj, runs, video)
-            calculationLimit = 100000000;
+            calculationLimit = 1e8;
             box = obj.problem("box");
             objProblem = obj.problem;
             resTmp = obj.res;
@@ -89,6 +99,7 @@ classdef resultsAnalysis
             end
             parfor r = 1:runs % use non-parallel for-loop for video!!
                 P = elevatorProblem;
+                P = P.addShape(objProblem("staticShape"));
                 P.box = box;
                 resTmp{L+r} = {};
                 currentObjectiveValue = 0;
@@ -105,7 +116,13 @@ classdef resultsAnalysis
                         axis([-P.box.width P.box.width -P.box.height P.box.height]*0.8)
                         saveas(gcf, [num2str(n), '.jpg'])
                     end
-                        
+                    
+                    if video == "returnP"
+                        Ptemp = P;
+                        if r == 1
+                            Pmax = P;
+                        end
+                    end
                     
                     % Add an object to the problem
                     if objProblem("shapesType") == "sigleType"
@@ -122,6 +139,7 @@ classdef resultsAnalysis
                     
                     if isa(P.shapes{end},"shape")
                     	P.shapes{end}.theta = rand()*2*pi;
+                        %P.shapes{end}.position = [(2*rand()-1), (2*rand()-1)];
                     	P.shapes{end}.position = [(2*rand()-1) * P.box.width/2, P.box.height/2];
                     elseif isa(P.shapes{end},"capsRect")
                     	P.shapes{end}.capsule.theta = rand()*2*pi;
@@ -141,6 +159,10 @@ classdef resultsAnalysis
                     currentObjectiveValue = Inf;
                     flagOne = false;
                     P = P.randomizeShapeIndices;
+                    
+                    %P.drawProblem(false);
+                    %return
+                    %P.objectiveFunctionAll(NaN, false, objProblem)
                     
                     % Iterate until a solution / a local minimum is found
                     while P.calculations < calculationLimit && currentObjectiveValue ~= 0
@@ -208,10 +230,16 @@ classdef resultsAnalysis
                         break
                     end
                 end
+                if video == "returnP" && length(Ptemp.shapes) > length(Pmax.shapes)
+                    Pmax = Ptemp;
+                end
             end
             obj.res = resTmp;
             if video == "video"
                 close(videoFile);
+            end
+            if video == "returnP"
+            	obj = Pmax;
             end
         end
         
@@ -253,7 +281,7 @@ classdef resultsAnalysis
             end
         end
         
-        function [] = plot(obj)
+        function [] = plot(obj,title1,save)
             res2 = obj.res2matrix();
             maxN = length(res2(:,1));
             expArray = obj.expectedCalculations();
@@ -279,31 +307,49 @@ classdef resultsAnalysis
             'Location',...
             'northwest');
             set(gca, 'YScale', 'log')
+            title(obj.name);
+            if save
+                figuresize(14, 9, 'cm')
+                saveas(gcf, [title1, '.pdf'])
+            end
         end
         
-        function [] = plotTwo(obj1,obj2)
+        function [] = plotTwo(obj1,obj2,obj3,title1,title2,save)
             res2 = obj1.res2matrix();
             maxN1 = length(res2(:,1));
             res2 = obj2.res2matrix();
             maxN2 = length(res2(:,1));
+            res2 = obj3.res2matrix();
+            maxN3 = length(res2(:,1));
             expArray1 = obj1.expectedCalculations();
             expArray2 = obj2.expectedCalculations();
+            expArray3 = obj3.expectedCalculations();
             figure; hold on;
             for p = 1:maxN1
-                pExp1 = plot(p + [-0.4, 0.4], ones(2,1)*expArray1(p), 'LineWidth', 1, 'Color', 'b');
+                pExp1 = plot(p + [-0.4, 0.4], ones(2,1)*expArray1(p), 'LineWidth', 1.5, 'Color', 'r');
             end
             for p = 1:maxN2
-                pExp2 = plot(p + [-0.4, 0.4], ones(2,1)*expArray2(p), 'LineWidth', 1, 'Color', 'r');
+                pExp2 = plot(p + [-0.4, 0.4], ones(2,1)*expArray2(p), 'LineWidth', 1.5, 'Color', 'b');
+            end
+            for p = 1:maxN3
+                pExp3 = plot(p + [-0.4, 0.4], ones(2,1)*expArray3(p), 'LineWidth', 1.5, 'Color', 'k');
             end
             
             xlabel("# of objects in the box")
             ylabel("Time (# of area evaluations)")
-            legend([pExp1 pExp2],...
+            title(title1);
+            legend([pExp1 pExp2, pExp3],...
             [obj1.name, ...
-             obj2.name],...
+             obj2.name,...
+             obj3.name],...
             'Location',...
             'northwest');
             %set(gca, 'YScale', 'log')
+            
+            if save
+                figuresize(14, 9, 'cm')
+                saveas(gcf, [title1, '.pdf'])
+            end
             
             figure; hold on;
             for p = 1:min(maxN1, maxN2)
@@ -329,7 +375,13 @@ classdef resultsAnalysis
             join([obj1.name, ' / ', obj2.name]),...
             'Location',...
             'northwest');
+            title(title2);
             %set(gca, 'YScale', 'log')
+            
+            %if save
+            %    figuresize(19.5, 11.96, 'cm')
+            %    saveas(gcf, [title2, '.pdf'])
+            %end
         end
     end
 end

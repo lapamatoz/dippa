@@ -16,7 +16,7 @@ classdef shape
             if obj.type == "capsule"
                 r = obj.height / 2;
                 a = (obj.width - obj.height )/2;
-            elseif obj.type == "rectangle"
+            else %if obj.type == "rectangle"
                 r = obj.height / 2;
                 a = obj.width  / 2;
             end
@@ -27,7 +27,7 @@ classdef shape
             s = legacyCoordinates(obj);
             if obj.type == "capsule"
                 out = s(2)*(pi*s(2) + 4*s(1));
-            elseif obj.type == "rectangle"
+            else %if obj.type == "rectangle"
                 out = 4 * s(1) * s(2);
             end
         end
@@ -53,10 +53,10 @@ classdef shape
                     out = stadiumRectOverlapArea4(s1, s2);
                 elseif obj1.type == "rectangle" && obj2.type == "capsule"
                     out = stadiumRectOverlapArea4(s2, s1);
-                elseif obj1.type == "rectangle" && obj2.type == "rectangle"
+                else %if obj1.type == "rectangle" && obj2.type == "rectangle"
                     out = rectIntersectArea(s1, s2);
                 end
-            elseif isa(obj2, "capsRect")
+            else %if isa(obj2, "capsRect")
                 out = obj2.intersectArea(obj1,condition);
             end
             %if out < 4e-3 * obj1.shapeArea
@@ -97,10 +97,10 @@ classdef shape
                             norm(b-P)]);
                 out = out + dist*1; % 100 tähän?
             end
-            if out < 0
-                out = 0;
-            end
-            out = out^2;
+            %if out < 0
+            %    out = 0;
+            %end
+            out = max(0, out)^2;
         end
         
         function w = weights(obj)
@@ -114,7 +114,7 @@ classdef shape
                 w = [abs(a*e1(2)) + 2*r,...
                      abs(a*e2(2)) + 2*r,...
                      a*(r+a/4)];
-            elseif obj.type == "rectangle"
+            else %if obj.type == "rectangle"
                 w = [s(2)*2*abs(e1(1)) + s(1)*2*abs(e1(2)),...
                      s(2)*2*abs(e2(1)) + s(1)*2*abs(e2(2)),...
                      (s(1)*2)^2/4 + (s(2)*2)^2/4];
@@ -130,7 +130,7 @@ classdef shape
                     shapes{q}.position(1) = min(box.width/2, max(-box.width/2, shapes{q}.position(1)));
                     shapes{q}.position(2) = min(box.height/2, max(-box.height/2, shapes{q}.position(2)));
                     shapes{q}.theta = mod(shapes{q}.theta, 2*pi);
-                elseif isa(shapes{q}, "capsRect")
+                else %if isa(shapes{q}, "capsRect")
                     tmp = box.contain({shapes{q}.capsule});
                     shapes{q}.capsule = tmp{1};
                     shapes{q}.rectangle.position(1) = mod(shapes{q}.rectangle.position(1), 4*pi);
@@ -159,7 +159,7 @@ classdef shape
                     drawCircle(circlePoints(1,1)+s(3),circlePoints(2,1)+s(4),s(2),false, fillColor, strokeColor);
                     drawCircle(circlePoints(1,2)+s(3),circlePoints(2,2)+s(4),s(2),false, fillColor, strokeColor);
                 end
-            elseif obj.type == "rectangle"
+            else %if obj.type == "rectangle"
                 if filled
                     h = fill(points(1,:)+s(3),points(2,:)+s(4), fillColor);
                     h.LineWidth = strokeWidth; % 0.1

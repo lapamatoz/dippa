@@ -18,6 +18,20 @@ classdef elevatorProblem
             end
         end
         
+        function obj = positionShape(obj, type, q)
+            if isnan(q)
+                q = length(obj.shapes);
+            end
+            B = obj.box;
+            if type == "atDoor"
+                obj.shapes{q}.position = [(2*rand()-1) * B.width/2, B.height/2];
+                obj.shapes{q}.theta = rand()*2*pi;
+            elseif type == "anywhere"
+                obj.shapes{q}.position = [(2*rand()-1) * B.width/2, (2*rand()-1) * B.height/2];
+                obj.shapes{q}.theta = rand()*2*pi;
+            end
+        end
+        
         function obj = createBox(obj,dimensions)
             obj.box = shape;
             obj.box.position = [0;0];

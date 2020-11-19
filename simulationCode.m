@@ -79,7 +79,7 @@ for q = 1:6
     cyclic(q) = resultsAnalysis;
     cyclic(q).problem = containers.Map;
     cyclic(q) = cyclic(q).initialize();
-    cyclic(q).problem('method2') = @(P,p)P.optimizeCyclic('triangle',p);
+    cyclic(q).problem('method2') = @(P,p)P.optimizeCyclic('Matlab',p);
     cyclic(q).problem('squared') = 'no';
     cyclic(q).problem('changeIter') = 0;
     cyclic(q).problem('h2Step') = 'no';
@@ -142,11 +142,11 @@ end
 
 twoShoppingCarts = resultsAnalysis;
 q = 1;
-for orient1 = 1:2
-    for orient2 = 1:2
+for orient1 = 1:2 % 1: pysty, 2: vaaka
+    for orient2 = 1:2 % 1: pysty, 2: vaaka
         for corner1 = 1
-            for corner2 = 1:5
-                for boxSize = 1:3
+            for corner2 = 1:5 % 1: ekan päällä, 2: ekan vasemmalla puolella, 3: ylä-o, 4: ylä-v, 5: ala-v
+                for boxSize = 1:3 % 1: big, 2: mid, 3: small
                     twoShoppingCarts(q).name = "New Algorithm Shopping Carts";
                     twoShoppingCarts(q) = resultsAnalysis;
                     twoShoppingCarts(q).name = join([twoShoppingCarts(q).name, "box-", num2str(boxSize),...
@@ -154,10 +154,9 @@ for orient1 = 1:2
                                                                                    "_orient2-", num2str(orient2),...
                                                                                    "_corner2-", num2str(corner2),...
                                                                                    ]);
-                        
                     twoShoppingCarts(q).problem = containers.Map;
                     twoShoppingCarts(q) = twoShoppingCarts(q).initialize();
-                    twoShoppingCarts(q).problem('method2') = @(P,p)P.optimizeCyclic('triangle',p);
+                    twoShoppingCarts(q).problem('method2') = @(P,p)P.optimizeCyclic('Matlab',p);
                     twoShoppingCarts(q).problem('squared') = 'no';
                     twoShoppingCarts(q).problem('changeIter') = 0;
                     twoShoppingCarts(q).problem('h2Step') = 'diminishing';

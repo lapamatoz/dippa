@@ -9,6 +9,7 @@ classdef resultsAnalysis
         % which is not a solution
         problem = containers.Map % "shapes", "box" : [x,y], "methods"
         name
+        Pbest
     end
     
     methods
@@ -59,10 +60,12 @@ classdef resultsAnalysis
             obj.problem("solutionLimit") = 1e-3;
             obj.problem("squared") = "no";
             obj.problem("linesearchLimit") = .5;
-            obj.problem("randomTrials") = 1;
+            obj.problem("randomTrials") = 2;
             obj.problem("accelerationProbability") = .3;
             obj.problem("h2Step") = "diminishing";
             obj.problem("allowDist") = "allowDistances";
+            obj.problem("objectPlacement") = "atDoor";
+            obj.problem("staticObjectPlacement") = "anywhere";
         end
         function obj = initializeFullGradient(obj)
             box = shape;
@@ -97,10 +100,16 @@ classdef resultsAnalysis
             else
                 videoFile = NaN;
             end
+            Parray = elevatorProblem;
             parfor r = 1:runs % use non-parallel for-loop for video!!
                 P = elevatorProblem;
                 P = P.addShape(objProblem("staticShape"));
                 P.box = box;
+                %P.drawProblem(false)
+                for q = 1:length(P.shapes)
+                    P = P.positionShape(objProblem("staticObjectPlacement"), q);
+                end
+                %P.drawProblem(false)
                 resTmp{L+r} = {};
                 currentObjectiveValue = 0;
                 n = 0;
@@ -117,12 +126,7 @@ classdef resultsAnalysis
                         saveas(gcf, [num2str(n), '.jpg'])
                     end
                     
-                    if video == "returnP"
-                        Ptemp = P;
-                        if r == 1
-                            Pmax = P;
-                        end
-                    end
+                    Parray(r) = P;
                     
                     % Add an object to the problem
                     if objProblem("shapesType") == "sigleType"
@@ -137,14 +141,7 @@ classdef resultsAnalysis
                     
                     n = n+1;
                     
-                    if isa(P.shapes{end},"shape")
-                    	P.shapes{end}.theta = rand()*2*pi;
-                        %P.shapes{end}.position = [(2*rand()-1), (2*rand()-1)];
-                    	P.shapes{end}.position = [(2*rand()-1) * P.box.width/2, P.box.height/2];
-                    elseif isa(P.shapes{end},"capsRect")
-                    	P.shapes{end}.capsule.theta = rand()*2*pi;
-                    	P.shapes{end}.capsule.position = [(2*rand()-1) * P.box.width/2, P.box.height/2];
-                    end
+                    P = P.positionShape(objProblem("objectPlacement"),NaN);
                     
                     % Check if problem is impossible
                     if P.impossible()
@@ -160,10 +157,6 @@ classdef resultsAnalysis
                     flagOne = false;
                     P = P.randomizeShapeIndices;
                     
-                    %P.drawProblem(false);
-                    %return
-                    %P.objectiveFunctionAll(NaN, false, objProblem)
-                    
                     % Iterate until a solution / a local minimum is found
                     while P.calculations < calculationLimit && currentObjectiveValue ~= 0
                         if video == "video" && (n < 5 || mod(iter,n-3) == 0)
@@ -177,7 +170,7 @@ classdef resultsAnalysis
                         end
                         
                         % Check if the objective is descending
-                        if mod(iter, 5*n) == 0 && ~firstMethodInUse
+                        if mod(iter, 9*n) == 0 && ~firstMethodInUse
                             if objFunValue > previousMinFunValue*0.995
                                 if flagOne
                                     disp("Objective is not descending");
@@ -201,12 +194,10 @@ classdef resultsAnalysis
                                 fun = objProblem("method1");
                                 P = fun(P, objProblem);
                                 firstMethodInUse = true;
-                                %disp('M1')
                             else
                                 fun = objProblem("method2");
                                 P = fun(P, objProblem);
                                 firstMethodInUse = false;
-                                %disp('M2')
                             end
                         else
                             disp("Method not found")
@@ -215,7 +206,7 @@ classdef resultsAnalysis
                         
                         iter = iter+1;
                         % Check feasibility only fraction of the time
-                        if mod(iter,4) == 0
+                        if mod(iter,7) == 0
                             currentObjectiveValue = P.objectiveFunctionAll(NaN, false, objProblem);
                         end
                         objFunValue = min([objFunValue, currentObjectiveValue]);
@@ -230,16 +221,24 @@ classdef resultsAnalysis
                         break
                     end
                 end
-                if video == "returnP" && length(Ptemp.shapes) > length(Pmax.shapes)
-                    Pmax = Ptemp;
-                end
             end
             obj.res = resTmp;
             if video == "video"
                 close(videoFile);
             end
-            if video == "returnP"
-            	obj = Pmax;
+            if isempty(obj.Pbest)
+                currentBest = 0;
+            else
+                currentBest = length(obj.Pbest(1).shapes);
+            end
+            for r = 1:runs
+                l = length(Parray(r).shapes);
+                if l > currentBest
+                    obj.Pbest = Parray(r);
+                    currentBest = l;
+                elseif l == currentBest
+                    obj.Pbest = [obj.Pbest, Parray(r)];
+                end
             end
         end
         

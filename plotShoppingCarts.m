@@ -1,4 +1,4 @@
-numOfCarts = 2;
+numOfCarts = 3;
 size = 1;
 
 if numOfCarts == 1

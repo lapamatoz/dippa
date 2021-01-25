@@ -61,7 +61,7 @@ classdef resultsAnalysis
             obj.problem("squared") = "no";
             obj.problem("linesearchLimit") = .5;
             obj.problem("randomTrials") = 2;
-            obj.problem("accelerationProbability") = .3;
+            obj.problem("accelerationProbability") = .3; % .3 in previous
             obj.problem("h2Step") = "diminishing";
             obj.problem("allowDist") = "allowDistances";
             obj.problem("objectPlacement") = "atDoor";
@@ -86,6 +86,7 @@ classdef resultsAnalysis
             obj.problem("method2") = @(P)P.optimizeFullGradient();
             obj.problem("changeIter") = 15; % change at changeIter*n
         end
+        
         function obj = simulate(obj, runs, video)
             calculationLimit = 1e8;
             box = obj.problem("box");
@@ -168,6 +169,10 @@ classdef resultsAnalysis
                             frame = getframe(gcf);
                             writeVideo(videoFile,frame);
                         end
+                        
+                        %if max(abs(P.FullGradient())) < 1e-2
+                        % disp("Non-feasible local optimum")
+                        %end
                         
                         % Check if the objective is descending
                         if mod(iter, 9*n) == 0 && ~firstMethodInUse
@@ -280,12 +285,26 @@ classdef resultsAnalysis
             end
         end
         
+        function p1 = probabilityP(obj)
+            res2 = obj.res2matrix();
+            maxN = length(res2(:,1));
+            lenRes = length(res2(1,:));
+            probP = zeros(maxN,1);
+            for p = 1:maxN
+                positive = res2(p, res2(p,:) >= 0);
+                probP(p) = length(positive) / lenRes;
+            end
+            p1 = plot(1:maxN, probP);
+            xlabel('# of objects in the box')
+            ylabel('Probability {\itp}')
+        end
+        
         function [] = plot(obj,title1,save)
             res2 = obj.res2matrix();
             maxN = length(res2(:,1));
             expArray = obj.expectedCalculations();
-            figure;
-            hold on
+            %figure;
+            %hold on
             for p = 1:maxN
                 positive = res2(p, res2(p,:) >= 0);
                 negative = res2(p, res2(p,:) < 0);
@@ -313,68 +332,65 @@ classdef resultsAnalysis
             end
         end
         
-        function [] = plotTwo(obj1,obj2,obj3,title1,title2,save)
+        function p1 = plotTwo(obj1,objs)
             res2 = obj1.res2matrix();
             maxN1 = length(res2(:,1));
-            res2 = obj2.res2matrix();
-            maxN2 = length(res2(:,1));
-            res2 = obj3.res2matrix();
-            maxN3 = length(res2(:,1));
             expArray1 = obj1.expectedCalculations();
-            expArray2 = obj2.expectedCalculations();
-            expArray3 = obj3.expectedCalculations();
-            figure; hold on;
+            hold on;
             for p = 1:maxN1
-                pExp1 = plot(p + [-0.4, 0.4], ones(2,1)*expArray1(p), 'LineWidth', 1.5, 'Color', 'r');
+                p1 = plot(p + [-0.4, 0.4], ones(2,1)*expArray1(p), 'LineWidth', 1.5, 'Color', 'k');
             end
-            for p = 1:maxN2
-                pExp2 = plot(p + [-0.4, 0.4], ones(2,1)*expArray2(p), 'LineWidth', 1.5, 'Color', 'b');
-            end
-            for p = 1:maxN3
-                pExp3 = plot(p + [-0.4, 0.4], ones(2,1)*expArray3(p), 'LineWidth', 1.5, 'Color', 'k');
+            
+            for q = 1:length(objs)
+                resMat = objs(q).res2matrix();
+                maxN = length(resMat(:,1));
+                expArray = objs(q).expectedCalculations();
+                for p = 1:maxN
+                    p1 = [p1, plot(p + [-0.4, 0.4], ones(2,1)*expArray(p), 'LineWidth', 1.5, 'Color', defaultPlotColors(q))];
+                end
             end
             
             xlabel("# of objects in the box")
             ylabel("Time (# of area evaluations)")
-            title(title1);
-            legend([pExp1 pExp2, pExp3],...
-            [obj1.name, ...
-             obj2.name,...
-             obj3.name],...
-            'Location',...
-            'northwest');
-            %set(gca, 'YScale', 'log')
+%             title(title1);
+%             legend([pExp1 pExp2, pExp3],...
+%             [obj1.name, ...
+%              obj2.name,...
+%              obj3.name],...
+%             'Location',...
+%             'northwest');
+            set(gca, 'YScale', 'log')
             
-            if save
-                figuresize(14, 9, 'cm')
-                saveas(gcf, [title1, '.pdf'])
-            end
-            
-            figure; hold on;
-            for p = 1:min(maxN1, maxN2)
-                pExp1 = plot(p + [-0.4, 0.4], ones(2,1)*expArray1(p) / expArray2(p), 'LineWidth', 1, 'Color', 'b');
-            end
-            
-            if maxN1 < maxN2
-                for p = (min(maxN1, maxN2)+1):maxN2
-                    pExp1 = plot(p + [-0.4, 0.4], zeros(2,1), 'LineWidth', 1, 'Color', 'b');
-                end
-                disp('Inf encountered')
-            elseif maxN1 > maxN2
-                for p = (min(maxN1, maxN2)+1):maxN1
-                    if ~isinf(expArray1(p))
-                        pExp1 = plot(p + [-0.4, 0.4], zeros(2,1), 'LineWidth', 1, 'Color', 'b');
-                    end
-                end
-            end
-            
-            xlabel("# of objects in the box")
-            %ylabel("Time (# of area evaluations)")
-            legend([pExp1],...
-            join([obj1.name, ' / ', obj2.name]),...
-            'Location',...
-            'northwest');
-            title(title2);
+%             if save
+%                 figuresize(14, 9, 'cm')
+%                 saveas(gcf, [title1, '.pdf'])
+%             end
+%             
+%             figure; hold on;
+%             for p = 1:min(maxN1, maxN2)
+%                 pExp1 = plot(p + [-0.4, 0.4], ones(2,1)*expArray1(p) / expArray2(p), 'LineWidth', 1, 'Color', 'b');
+%             end
+%             
+%             if maxN1 < maxN2
+%                 for p = (min(maxN1, maxN2)+1):maxN2
+%                     pExp1 = plot(p + [-0.4, 0.4], zeros(2,1), 'LineWidth', 1, 'Color', 'b');
+%                 end
+%                 disp('Inf encountered')
+%             elseif maxN1 > maxN2
+%                 for p = (min(maxN1, maxN2)+1):maxN1
+%                     if ~isinf(expArray1(p))
+%                         pExp1 = plot(p + [-0.4, 0.4], zeros(2,1), 'LineWidth', 1, 'Color', 'b');
+%                     end
+%                 end
+%             end
+%             
+%             xlabel("# of objects in the box")
+%             %ylabel("Time (# of area evaluations)")
+%             legend([pExp1],...
+%             join([obj1.name, ' / ', obj2.name]),...
+%             'Location',...
+%             'northwest');
+%             title(title2);
             %set(gca, 'YScale', 'log')
             
             %if save

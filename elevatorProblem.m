@@ -145,7 +145,7 @@ classdef elevatorProblem
             obj.calculations = objCalculations;
         end
         
-        function obj = optimizeBFGS2(obj,problem) % vanha versio
+        function obj = optimizeBFGS(obj,problem) % vanha versio
             n = length(obj.shapes);
             x = decisionVariablesFromProblem(obj);
             %disp(x);
@@ -175,7 +175,7 @@ classdef elevatorProblem
             end
             H = H + (s.'*y + y.'*H*y)*(s*s.')/(denominator)^2 - (H*y*s.' + s*y.'*H)/denominator;
             obj.data('HessianInv') = H;
-            H1g = H*grad; H2g = H*H*grad; H3g=H*H*H*grad;
+            H1g = H*grad; %H2g = H*H*grad; H3g=H*H*H*grad;
             fun = @(alpha)objectiveFunctionAll(obj, x - H1g*alpha, false, problem);
             options = optimset('Display','off','MaxIter',6,'TolX',1e-4);
             [a,fa,~,out] = fminbnd(fun,0.1,1.4,options);
@@ -195,7 +195,7 @@ classdef elevatorProblem
             obj = obj.decisionVariablesToProblem(x);
         end
         
-        function obj = optimizeBFGS(obj,problem)
+        function obj = optimizeBFGS2(obj,problem) % uusi versio
             n = length(obj.shapes);
             x = decisionVariablesFromProblem(obj);
             %disp(x);

@@ -1,4 +1,4 @@
-r = 30;
+r = 1;
 
 load = true;
 
@@ -7,17 +7,19 @@ if load
         BFGS(q) = BFGS(q).load(BFGS(q).name);
         Matlab(q) = Matlab(q).load(Matlab(q).name);
         cyclic(q) = cyclic(q).load(cyclic(q).name);
-        cyclicShoppingCart(q) = cyclicShoppingCart(q).load(cyclicShoppingCart(q).name);
+        %%% OTA POIS SEURAAVALLA KERRALLA
+        cyclic(q).res = {};
+        %cyclicShoppingCart(q) = cyclicShoppingCart(q).load(cyclicShoppingCart(q).name);
         %cyclicShoppingCart(q).res = {};
         %cyclicShoppingCart(q).res{end} = {};
-        cyclicShoppingCart(q).problem('objectPlacement') = "anywhere";
-        cyclicShoppingCart(q).problem('staticObjectPlacement') = "leaveBe";
+        %cyclicShoppingCart(q).problem('objectPlacement') = "anywhere";
+        %cyclicShoppingCart(q).problem('staticObjectPlacement') = "leaveBe";
     end
     for q = 1:length(twoShoppingCarts)
-        twoShoppingCarts(q) = twoShoppingCarts(q).load(twoShoppingCarts(q).name);
+        %twoShoppingCarts(q) = twoShoppingCarts(q).load(twoShoppingCarts(q).name);
         %twoShoppingCarts(q).res{end} = {};
-        twoShoppingCarts(q).problem('objectPlacement') = "anywhere";
-        twoShoppingCarts(q).problem('staticObjectPlacement') = "leaveBe";
+        %twoShoppingCarts(q).problem('objectPlacement') = "anywhere";
+        %twoShoppingCarts(q).problem('staticObjectPlacement') = "leaveBe";
     end
 end
 
@@ -38,15 +40,15 @@ for q = 1:6
     %BFGS(q).save();
     %Matlab(q) = Matlab(q).simulate(min(3*r, maxLen + r - length(Matlab(q).res)),"no");
     %Matlab(q).save();
-    %cyclic(q) = cyclic(q).simulate(min(3*r, maxLen + r - length(cyclic(q).res)),"no");
-    %cyclic(q).save();
-    cyclicShoppingCart(q) = cyclicShoppingCart(q).simulate(min(3*r, maxLen + r - length(cyclicShoppingCart(q).res)),"no");
-    cyclicShoppingCart(q).save();
+    cyclic(q) = cyclic(q).simulate(min(3*r, maxLen + r - length(cyclic(q).res)),"no");
+    cyclic(q).save();
+    %cyclicShoppingCart(q) = cyclicShoppingCart(q).simulate(min(3*r, maxLen + r - length(cyclicShoppingCart(q).res)),"no");
+    %cyclicShoppingCart(q).save();
 end
 
 for q = 1:length(twoShoppingCarts)
-    twoShoppingCarts(q) = twoShoppingCarts(q).simulate(min(3*r, maxLen + r - length(twoShoppingCarts(q).res)),"no");
-    twoShoppingCarts(q).save();
+    %twoShoppingCarts(q) = twoShoppingCarts(q).simulate(min(3*r, maxLen + r - length(twoShoppingCarts(q).res)),"no");
+    %twoShoppingCarts(q).save();
 end
 
 %for q = 1:6
@@ -54,8 +56,12 @@ end
 %    cyclic(q).plotTwo(Matlab(q))
 %end
 
-% Plotting
-% BFGS(1).plot('Progression of BFGS, just capsules',true)
+% Plotting, capsules, BFGS and Matlab
+
+
+
+BFGS(1).plot('Progression of BFGS, just capsules',false)
+
 % Matlab(1).plot('Progression of cyclic Matlab m., just capsules',true)
 % cyclic(1).plot('Progression of new cyclic m., just capsules',true)
 % 

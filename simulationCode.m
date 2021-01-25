@@ -16,6 +16,8 @@ smabox.height = 1350 / 100;
 smabox.width = 1400 / 100;
 smabox.type = 'rectangle';
 
+%%% CAPSULES / CAPS-RECTANGLES
+
 BFGS = resultsAnalysis;
 for q = 1:6
     BFGS(q) = resultsAnalysis;
@@ -79,7 +81,7 @@ for q = 1:6
     cyclic(q) = resultsAnalysis;
     cyclic(q).problem = containers.Map;
     cyclic(q) = cyclic(q).initialize();
-    cyclic(q).problem('method2') = @(P,p)P.optimizeCyclic('Matlab',p);
+    cyclic(q).problem('method2') = @(P,p)P.optimizeCyclic('triangle',p);
     cyclic(q).problem('squared') = 'no';
     cyclic(q).problem('changeIter') = 0;
     cyclic(q).problem('h2Step') = 'no';
@@ -102,6 +104,8 @@ for q = 1:6
         cyclic(q).name = join([cyclic(q).name, "capsRect"]);
     end
 end
+
+%%% SHOPPING CARTS, Different scenarios, not randomized
 
 cyclicShoppingCart = resultsAnalysis;
 for q = 1:6

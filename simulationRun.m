@@ -1,4 +1,4 @@
-r = 1;
+r = 0;
 
 load = true;
 
@@ -8,7 +8,8 @@ if load
         Matlab(q) = Matlab(q).load(Matlab(q).name);
         cyclic(q) = cyclic(q).load(cyclic(q).name);
         %%% OTA POIS SEURAAVALLA KERRALLA
-        cyclic(q).res = {};
+        %cyclic(q).res = {};
+        %cyclic(q).Pbest = [];
         %cyclicShoppingCart(q) = cyclicShoppingCart(q).load(cyclicShoppingCart(q).name);
         %cyclicShoppingCart(q).res = {};
         %cyclicShoppingCart(q).res{end} = {};
@@ -40,8 +41,8 @@ for q = 1:6
     %BFGS(q).save();
     %Matlab(q) = Matlab(q).simulate(min(3*r, maxLen + r - length(Matlab(q).res)),"no");
     %Matlab(q).save();
-    cyclic(q) = cyclic(q).simulate(min(3*r, maxLen + r - length(cyclic(q).res)),"no");
-    cyclic(q).save();
+    %cyclic(q) = cyclic(q).simulate(min(3*r, maxLen + r - length(cyclic(q).res)),"no");
+    %cyclic(q).save();
     %cyclicShoppingCart(q) = cyclicShoppingCart(q).simulate(min(3*r, maxLen + r - length(cyclicShoppingCart(q).res)),"no");
     %cyclicShoppingCart(q).save();
 end
@@ -58,9 +59,7 @@ end
 
 % Plotting, capsules, BFGS and Matlab
 
-
-
-BFGS(1).plot('Progression of BFGS, just capsules',false)
+cyclic(1).plotTwo([BFGS(1),Matlab(1)]);
 
 % Matlab(1).plot('Progression of cyclic Matlab m., just capsules',true)
 % cyclic(1).plot('Progression of new cyclic m., just capsules',true)

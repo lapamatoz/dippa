@@ -430,7 +430,7 @@ classdef elevatorProblem
             if problem("h2Step") == "diminishing"
                 h2 = 0.4 / sqrt((n+k)/n) + 1e-3;
             else
-                h2 = 1e-3;
+                h2 = 1;
             end
             
             if type == "Matlab"

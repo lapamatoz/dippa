@@ -60,7 +60,7 @@ classdef resultsAnalysis
             obj.problem("solutionLimit") = 1e-3;
             obj.problem("squared") = "no";
             obj.problem("linesearchLimit") = .5;
-            obj.problem("randomTrials") = 2;
+            obj.problem("randomTrials") = 3;
             obj.problem("accelerationProbability") = .3; % .3 in previous
             obj.problem("h2Step") = "diminishing";
             obj.problem("allowDist") = "allowDistances";
@@ -176,7 +176,7 @@ classdef resultsAnalysis
                         
                         % Check if the objective is descending
                         if mod(iter, 9*n) == 0 && ~firstMethodInUse
-                            if objFunValue > previousMinFunValue*0.995
+                            if objFunValue > previousMinFunValue*0.998 %aiemmin .995
                                 if flagOne
                                     disp("Objective is not descending");
                                     break
@@ -345,13 +345,16 @@ classdef resultsAnalysis
                 resMat = objs(q).res2matrix();
                 maxN = length(resMat(:,1));
                 expArray = objs(q).expectedCalculations();
-                for p = 1:maxN
-                    p1 = [p1, plot(p + [-0.4, 0.4], ones(2,1)*expArray(p), 'LineWidth', 1.5, 'Color', defaultPlotColors(q))];
+                p1 = [p1 , plot(1 + [-0.4, 0.4], ones(2,1)*expArray(1), 'LineWidth', 1.5, 'Color', defaultPlotColors(q))];
+                for p = 2:maxN
+                    plot(p + [-0.4, 0.4], ones(2,1)*expArray(p), 'LineWidth', 1.5, 'Color', defaultPlotColors(q));
                 end
             end
             
             xlabel("# of objects in the box")
             ylabel("Time (# of area evaluations)")
+            % Semi-log plot
+            set(gca, 'YScale', 'log')
 %             title(title1);
 %             legend([pExp1 pExp2, pExp3],...
 %             [obj1.name, ...
@@ -359,7 +362,7 @@ classdef resultsAnalysis
 %              obj3.name],...
 %             'Location',...
 %             'northwest');
-            set(gca, 'YScale', 'log')
+            
             
 %             if save
 %                 figuresize(14, 9, 'cm')

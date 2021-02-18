@@ -84,7 +84,7 @@ for q = 1:6
     cyclic(q).problem('method2') = @(P,p)P.optimizeCyclic('triangle',p);
     cyclic(q).problem('squared') = 'no';
     cyclic(q).problem('changeIter') = 0;
-    cyclic(q).problem('h2Step') = 'no';
+    cyclic(q).problem('h2Step') = 'diminishing';
     cyclic(q).problem('staticShape') = [];
     cyclic(q).name = "New Algorithm";
     if q == 1 || q == 4

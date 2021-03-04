@@ -1,15 +1,16 @@
-r = 0;
+r = 2;
 
 load = true;
 
 if load
     for q = 1:6
+        gradM(q) = gradM(q).load(gradM(q).name);
         BFGS(q) = BFGS(q).load(BFGS(q).name);
         Matlab(q) = Matlab(q).load(Matlab(q).name);
         cyclic(q) = cyclic(q).load(cyclic(q).name);
         %%% OTA POIS SEURAAVALLA KERRALLA
-        %cyclic(q).res = {};
-        %cyclic(q).Pbest = [];
+        %gradM(q).res = {};
+        %gradM(q).Pbest = [];
         %cyclicShoppingCart(q) = cyclicShoppingCart(q).load(cyclicShoppingCart(q).name);
         %cyclicShoppingCart(q).res = {};
         %cyclicShoppingCart(q).res{end} = {};
@@ -26,6 +27,7 @@ end
 
 maxLen = 0;
 for q = 1:6
+    maxLen = max(maxLen, length(gradM(q).res));
     maxLen = max(maxLen, length(BFGS(q).res));
     maxLen = max(maxLen, length(Matlab(q).res));
     maxLen = max(maxLen, length(cyclic(q).res));
@@ -37,12 +39,16 @@ for q = 1:length(twoShoppingCarts)
 end
 
 for q = 1:6
-    %BFGS(q) = BFGS(q).simulate(min(3*r, maxLen + r - length(BFGS(q).res)),"no");
-    %BFGS(q).save();
-    %Matlab(q) = Matlab(q).simulate(min(3*r, maxLen + r - length(Matlab(q).res)),"no");
-    %Matlab(q).save();
-    %cyclic(q) = cyclic(q).simulate(min(3*r, maxLen + r - length(cyclic(q).res)),"no");
-    %cyclic(q).save();
+    if q ~= 1
+        gradM(q) = gradM(q).simulate(min(3*r, maxLen + r - length(gradM(q).res)),"no");
+        gradM(q).save();
+    end
+    BFGS(q) = BFGS(q).simulate(min(3*r, maxLen + r - length(BFGS(q).res)),"no");
+    BFGS(q).save();
+    Matlab(q) = Matlab(q).simulate(min(3*r, maxLen + r - length(Matlab(q).res)),"no");
+    Matlab(q).save();
+    cyclic(q) = cyclic(q).simulate(min(3*r, maxLen + r - length(cyclic(q).res)),"no");
+    cyclic(q).save();
     %cyclicShoppingCart(q) = cyclicShoppingCart(q).simulate(min(3*r, maxLen + r - length(cyclicShoppingCart(q).res)),"no");
     %cyclicShoppingCart(q).save();
 end

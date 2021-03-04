@@ -95,13 +95,13 @@ classdef elevatorProblem
         function [out, obj] = fullGradient(obj, problem)
             % returns gradient of the problem
             n = length(obj.shapes);
-            out = obj.decisionVariablesFromProblem * 0;
-            ind = 1;
             objShapes = obj.shapes;
             fun = @(x,q,weights,p)obj.objectiveFunctionShapeWise(x./weights, q, p);
             objCalculations = obj.calculations;
             
-            for q = 1:n
+            grads = {};
+            
+            parfor q = 1:n
                 weights = objShapes{q}.weights();
                 if isa(objShapes{q},"shape")
                     initialX = objShapes{q}.legacyCoordinates();
@@ -109,15 +109,15 @@ classdef elevatorProblem
                 
                     [grad, f0, calcTmp] = triangleGrad(@(x)fun(x,q,weights,problem), initialX, 1e-4, true);
                     objCalculations = objCalculations + calcTmp * numofcalc(obj,q,"objectWise");
-                    out(ind:(ind+2)) = grad; % joku kerroin ???
-                
+                    grads{q} = grad; % joku kerroin ???
+                    
                     if f0 == 0
                         grad = grad ./ weights;
                         objShapes{q}.position = grad(1:2);
                         objShapes{q}.theta = grad(3);
-                        out(ind:(ind+2)) = out(ind:(ind+2))*0;
+                        grads{q} = [0;0;0];
                     end
-                    ind = ind + 3;
+                    %ind = ind + 3;
                 else
                     initialX = objShapes{q}.capsule.legacyCoordinates();
                     initialX = [initialX(3:5);...
@@ -128,16 +128,29 @@ classdef elevatorProblem
                     [grad, f0, calcTmp] = triangleGrad(@(x)fun(x,q,weights,problem), initialX, 1e-4, true);
                     objCalculations = objCalculations + calcTmp * numofcalc(obj,q,"objectWise");
                     
-                    out(ind:(ind+4)) = grad; % joku kerroin ???
+                    grads{q} = grad; % joku kerroin ???
                 
                     if f0 == 0
                         grad = grad ./ weights;
                         objShapes{q}.capsule.position = grad(1:2);
                         objShapes{q}.capsule.theta = grad(3);
                         objShapes{q}.rectangle.position = grad(4:5);
-                        out(ind:(ind+4)) = out(ind:(ind+4))*0;
+                        grads{q} = [0;0;0;0;0];
                     end
-                    ind = ind + 5;
+                    %ind = ind + 5;
+                end
+            end
+            
+            out = obj.decisionVariablesFromProblem * 0;
+            
+            ind = 1;
+            for q = 1:n
+                if isa(objShapes{q},"shape")
+                    out(ind:(ind+2)) = grads{q};
+                    ind = ind+3;
+                else
+                    out(ind:(ind+4)) = grads{q};
+                    ind = ind+5;
                 end
             end
             
@@ -170,26 +183,27 @@ classdef elevatorProblem
             y = grad - gOld;
             %disp(H)
             denominator = s.'*y;
-            if abs(denominator) < 1e-5
-                denominator = 1e-5;
+            if abs(denominator) > 1e-4
+                H = H + (s.'*y + y.'*H*y)*(s*s.')/(denominator)^2 - (H*y*s.' + s*y.'*H)/denominator;
             end
-            H = H + (s.'*y + y.'*H*y)*(s*s.')/(denominator)^2 - (H*y*s.' + s*y.'*H)/denominator;
             obj.data('HessianInv') = H;
             H1g = H*grad; %H2g = H*H*grad; H3g=H*H*H*grad;
             fun = @(alpha)objectiveFunctionAll(obj, x - H1g*alpha, false, problem);
             options = optimset('Display','off','MaxIter',6,'TolX',1e-4);
-            [a,fa,~,out] = fminbnd(fun,0.1,1.4,options);
-            obj.calculations = obj.calculations + out.funcCount * numofcalc(obj,NaN,"allCombOfTwo");
+            [a,fa,~,out1] = fminbnd(fun,0.1,1.4,options);
+            
             fun = @(alpha)objectiveFunctionAll(obj, x - alpha*grad, false, problem);
             limit = 0.5;
             options = optimset('Display','off','MaxIter',4,'TolX',1e-4);
-            [aG,fG,~,out] = fminbnd(fun,0,2*limit,options);
-            obj.calculations = obj.calculations + out.funcCount * numofcalc(obj,NaN,"allCombOfTwo");
+            [aG,fG,~,out2] = fminbnd(fun,0,2*limit,options);
+            
             if fa < fG
                 x = x - H1g*a;
+                obj.calculations = obj.calculations + out1.funcCount * numofcalc(obj,NaN,"allCombOfTwo");
                 %disp('hessian')
             else
                 x = x - aG*grad;
+                obj.calculations = obj.calculations + out2.funcCount * numofcalc(obj,NaN,"allCombOfTwo");
                 %disp('grad')
             end
             obj = obj.decisionVariablesToProblem(x);
@@ -242,34 +256,14 @@ classdef elevatorProblem
         
         function obj = optimizeFullGradient(obj,problem)
             n = length(obj.shapes);
-            try
-                obj.data("iterationIndex") = obj.data("iterationIndex") + 1;
-            catch
-                obj.data("iterationIndex") = 0;
-            end
-            [grad, obj] = fullGradient(obj,problem);
-            limit = 0.5;
-            %funx0 = objectiveFunctionAll(obj, NaN, false, problem);
-            %objective = funx0;
             x = decisionVariablesFromProblem(obj);
-            x0 = x;
-            %k = 0;
-            fun = @(alpha)objectiveFunctionAll(obj, x0 - alpha*grad, false, problem);
-            options = optimset('Display','off','MaxIter',3,'TolX',1e-7);
-            [a,~,out] = fminbnd(fun,0,2*limit,options);
+            [grad, obj] = fullGradient(obj,problem);
+            fun = @(alpha)objectiveFunctionAll(obj, x - alpha*grad, false, problem);
+            limit = 0.5;
+            options = optimset('Display','off','MaxIter',4,'TolX',1e-4);
+            [aG,~,~,out] = fminbnd(fun,0,2*limit,options);
             obj.calculations = obj.calculations + out.funcCount * numofcalc(obj,NaN,"allCombOfTwo");
-            x = x0 - a*grad;
-%             while funx0 <= objective && k < 5
-%                 x = x0 - limit*grads;
-%                 obj.calculations = obj.calculations + n/2* (n-1);
-%                 objective = objectiveFunctionAll(obj, x, false, problem);
-%                 if objective == 0
-%                     obj = obj.decisionVariablesToProblem(x);
-%                     return
-%                 end
-%                 limit = limit/2;
-%                 k = k+1;
-%             end
+            x = x - aG*grad;
             obj = obj.decisionVariablesToProblem(x);
         end
         

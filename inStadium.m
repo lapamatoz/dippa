@@ -11,13 +11,15 @@ p(1) = p(1) - s(3);
 p(2) = p(2) - s(4);
 p = [cos(-s(5)), -sin(-s(5)); sin(-s(5)), cos(-s(5))] * p;
 
-if (p(1) <= s(1) && p(1) >= -s(1) && p(2) <= s(2) && p(2) >= -s(2))
-    out = true;
-elseif ((p(1) - s(1))^2 + p(2)^2 <= s(2)^2)
-        out = true;
-elseif ((p(1) + s(1))^2 + p(2)^2 <= s(2)^2)
-        out = true;
-else
-        out = false;
-end
+out = (p(1) <= s(1) && p(1) >= -s(1) && p(2) <= s(2) && p(2) >= -s(2)) || ((p(1) - s(1))^2 + p(2)^2 <= s(2)^2) || ((p(1) + s(1))^2 + p(2)^2 <= s(2)^2);
+
+% if (p(1) <= s(1) && p(1) >= -s(1) && p(2) <= s(2) && p(2) >= -s(2))
+%     out = true;
+% elseif ((p(1) - s(1))^2 + p(2)^2 <= s(2)^2)
+%         out = true;
+% elseif ((p(1) + s(1))^2 + p(2)^2 <= s(2)^2)
+%         out = true;
+% else
+%         out = false;
+% end
 end

@@ -18,6 +18,35 @@ smabox.type = 'rectangle';
 
 %%% CAPSULES / CAPS-RECTANGLES
 
+gradM = resultsAnalysis;
+for q = 1:6
+    gradM(q) = resultsAnalysis;
+    gradM(q).problem = containers.Map;
+    gradM(q) = gradM(q).initialize();
+    gradM(q).problem('method2') = @(P,p)P.optimizeFullGradient(p);
+    gradM(q).problem('squared') = 'no';
+    gradM(q).problem('changeIter') = 0;
+    gradM(q).problem('h2Step') = 'no';
+    gradM(q).problem('staticShape') = [];
+    gradM(q).name = "Gradient method";
+    if q == 1 || q == 4
+        gradM(q).problem('box') = bigbox;
+        gradM(q).name = join([gradM(q).name, "bigBox"]);
+    elseif q == 2 || q == 5
+        gradM(q).problem('box') = midbox;
+        gradM(q).name = join([gradM(q).name, "midBox"]);
+    elseif q == 3 || q == 6
+        gradM(q).problem('box') = smabox;
+        gradM(q).name = join([gradM(q).name, "smallBox"]);
+    end
+    if q<=3
+        gradM(q).problem('shape1') = gradM(q).problem('shape1').capsule;
+        gradM(q).name = join([gradM(q).name, "capsules"]);
+    else
+        gradM(q).name = join([gradM(q).name, "capsRect"]);
+    end
+end
+
 BFGS = resultsAnalysis;
 for q = 1:6
     BFGS(q) = resultsAnalysis;

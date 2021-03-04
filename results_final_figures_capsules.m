@@ -6,8 +6,8 @@
 %You may try this
 %clear load
 
-scenario = 1; % 1 to 3
-save1 = false;
+scenario = 3; % 1 to 3
+save1 = true;
 
 % p-plots
 %big
@@ -20,21 +20,26 @@ else
     axisLimits = [8,16,-0.02,1.02];
 end
 
-p1 = BFGS(scenario).probabilityP();
-p2 = Matlab(scenario).probabilityP();
-p2.Color = 'k';
-p1.Color = defaultPlotColors(1);
+p2 = BFGS(scenario).probabilityP();
+p3 = Matlab(scenario).probabilityP();
+p1 = gradM(scenario).probabilityP();
+p1.Color = 'k';
+p2.Color = defaultPlotColors(1);
+p3.Color = defaultPlotColors(2);
 p1.LineWidth = 1;
 p2.LineWidth = 1;
-p1.LineStyle = '--';
+p3.LineWidth = 1;
+p2.LineStyle = '--';
+p3.LineStyle = '-.';
 axis(axisLimits)
 plot(axisLimits(1:2), [1,1], ':', 'Color', 'k', 'LineWidth', 1)
 plot(axisLimits(1:2), [0,0], ':', 'Color', 'k', 'LineWidth', 1)
 %grid on
 title('Probability of finding a feasible arrangement')
-legend([p2 p1],...
-            ["Cyclic pl. m. (Matlab's solver)", ...
-             "BFGS"],...
+legend([p1 p2 p3],...
+            ["Gradient method",...
+             "BFGS",...
+             "Cyclic pl. m. (Matlab's solver)"],...
             'Location',...
             'southwest');
 figuresize(14, 9, 'cm')
@@ -44,16 +49,25 @@ end
 
 figure; hold on;
 
-curves = Matlab(scenario).plotTwo(BFGS(scenario));
+curves = gradM(scenario).plotTwo([BFGS(scenario), Matlab(scenario)]);
 title('Expected solving times')
-legend([curves(1) curves(2)],...
-            ["Cyclic pl. m. (Matlab's solver)", ...
-             "BFGS"],...
+legend([curves(1) curves(2) curves(3)],...
+            ["Gradient method",...
+             "BFGS",...
+             "Cyclic pl. m. (Matlab's solver)"],...
             'Location',...
             'southeast');
 figuresize(14, 9, 'cm')
 if save1
     saveas(gcf, ['expected-capsules-',num2str(scenario),'.pdf']);
+end
+
+figure; hold on;
+gradM(scenario).plot('no',false);
+title("Gradient m. performance")
+figuresize(14, 9, 'cm')
+if save1
+    saveas(gcf, ['gradM-capsules-',num2str(scenario),'.pdf']);
 end
 
 figure; hold on;
@@ -72,7 +86,13 @@ if save1
     saveas(gcf, ['Matlab-capsules-',num2str(scenario),'.pdf']);
 end
 
-close all
+%close all
+
+gradM(scenario).Pbest(1).drawProblem(false);
+figuresize(14, 9, 'cm')
+if save1
+    saveas(gcf, ['gradM-arrangement-capsules-',num2str(scenario),'.pdf']);
+end
 
 BFGS(scenario).Pbest(1).drawProblem(false);
 figuresize(14, 9, 'cm')

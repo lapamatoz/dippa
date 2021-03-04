@@ -48,11 +48,11 @@ classdef shape
                 s1 = legacyCoordinates(obj1);
                 s2 = legacyCoordinates(obj2);
                 if obj1.type == "capsule" && obj2.type == "capsule"
-                    out = stadiumOverlapArea4(s1, s2);
+                    out = stadiumOverlapArea5(s1, s2);
                 elseif obj1.type == "capsule" && obj2.type == "rectangle"
-                    out = stadiumRectOverlapArea4(s1, s2);
+                    out = stadiumRectOverlapArea5(s1, s2);
                 elseif obj1.type == "rectangle" && obj2.type == "capsule"
-                    out = stadiumRectOverlapArea4(s2, s1);
+                    out = stadiumRectOverlapArea5(s2, s1);
                 else %if obj1.type == "rectangle" && obj2.type == "rectangle"
                     out = rectIntersectArea(s1, s2);
                 end
@@ -80,30 +80,31 @@ classdef shape
             B = obj1.rotationMatrix*[-(obj1.width - obj1.height)/2;0] + obj1.position;
             a = obj2.rotationMatrix*[+(obj2.width - obj2.height)/2;0] + obj2.position;
             b = obj2.rotationMatrix*[-(obj2.width - obj2.height)/2;0] + obj2.position;
-            out = min([distanceLineSegPt(A,B,a),...
-                       distanceLineSegPt(A,B,b),...
-                       distanceLineSegPt(a,b,A),...
-                       distanceLineSegPt(a,b,B)]);
-            out = -out + obj1.height/2 + obj1.height/2;
+            
             % Calculate intersection point
             M = [A-B, b-a];
             M = 1/(M(1,1)*M(2,2) - M(1,2)*M(2,1)) * [M(2,2), -M(1,2); -M(2,1), M(1,1)];
             ts = M * (b - B);
-            if 0 <= ts(1) && ts(1) <= 1 && 0 <= ts(2) && ts(2) <= 1
+            % if intersection exists...
+            if M(1,1)*M(2,2)-M(1,2)*M(2,1) ~= 0 && 0 <= ts(1) && ts(1) <= 1 && 0 <= ts(2) && ts(2) <= 1
                 P = ts(1) * A + (1-ts(1)) * B;
-                dist = min([norm(A-P),...
+                out = min([norm(A-P),...
                             norm(B-P),...
                             norm(a-P),...
                             norm(b-P)]);
-                out = out + dist*1; % 100 tähän?
+                out = (obj1.height/2 + obj1.height/2 + out)^2;
+            else
+                out = min([distanceLineSegPt(A,B,a),...
+                           distanceLineSegPt(A,B,b),...
+                           distanceLineSegPt(a,b,A),...
+                           distanceLineSegPt(a,b,B)]);
+                out = max(0, -out + obj1.height/2 + obj1.height/2)^2;
             end
-            %if out < 0
-            %    out = 0;
-            %end
-            out = max(0, out)^2;
         end
         
         function w = weights(obj)
+            w = [1,1,1];
+            return
             s = legacyCoordinates(obj);
             negativeRotMat = [cos(-s(5)), -sin(-s(5)); sin(-s(5)), cos(-s(5))];
             e1 = negativeRotMat * [1; 0];

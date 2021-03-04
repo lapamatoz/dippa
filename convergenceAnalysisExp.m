@@ -1,7 +1,7 @@
-plotPerformance(@(x)quadraticfun(x), 40, 40, 80, [-3,11], [-11,1], [10;-10], [0;0], 0, 'quadratic');
-plotPerformance(@(x)expfun(x), 31, 22, 40, [-4,1], [-4.5,1], [-2; -4], [-log(2) / 2 - 1/20; 0], 2*sqrt(2) / exp(3/20), 'exp');
+plotPerformance(@(x)quadraticfun(x), 30, 30, 80, [-3,11], [-11,1], [10;-10], [0;0], 0, 'quadratic');
+plotPerformance(@(x)expfun(x), 31, 22, 40, [-3.5,1], [-4.5,.5], [-2; -4], [-log(2) / 2 - 1/20; 0], 2*sqrt(2) / exp(3/20), 'exp');
 plotPerformance(@(x)rosenbrockfun(x), 10500, 8000, 130, [-0.7,1.5], [-1.2,1.5], [0.5;-1], [1;1], 0, 'rosenbrock');
-close all hidden
+%close all hidden
 % Rosenbrock with steps 10500, 8000 takes a lot of time
 
 function plotPerformance(fun, nExact, nNewtonLike, nContour, xrange, yrange, x0, optimum, optVal, name)
@@ -20,41 +20,44 @@ close all hidden
 contour(x1,x2,z.^0.5,8)
 hold on
 %%% End drawing contours
-lineWidth = 1;
+lineWidth = 1.5;
 
 %optimum = [-log(2) / 2 - 1/20, 0].';
 %optVal = 2*sqrt(2) / exp(3/20);
 
 %%% Begin Newton-like line search
-x = x0;
-funVal = fun(x(:,end));
+
+x = zeros(2,nNewtonLike);
+funVal = zeros(1,nNewtonLike);
+x(:,1) = x0;
+funVal(1) = fun(x(:,1));
 
 for k = 1:nNewtonLike
-    H = hessian(@(x)fun(x),x(:,end));
-    G = gradient(@(x)fun(x),x(:,end)).';
+    H = hessian(@(x)fun(x),x(:,k));
+    G = gradient(@(x)fun(x),x(:,k)).';
     
     alpha = norm(G)^2 / (G.' * H * G);
-    xnew = x(:,end) - alpha * G;
-    x = [x, xnew];
-    funVal = [funVal, fun(x(:,end))];
+    x(:,k+1) = x(:,k) - alpha * G;
+    funVal(k+1) = fun(x(:,k+1));
 end
 %%% End Newton-like line search
 
 %%% Begin exact line search
-xExact = x0;
-funValExact = fun(xExact(:,end));
+xExact = zeros(2,nExact);
+funValExact = zeros(1,nExact);
+xExact(:,1) = x0;
+funValExact(1) = fun(xExact(:,1));
 
 options = optimset('TolFun',1e-19,'TolX',1e-19);
 
 for k = 1:nExact
-    H = hessian(@(x)fun(x),xExact(:,end));
-    G = gradient(@(x)fun(x),xExact(:,end)).';
+    H = hessian(@(x)fun(x),xExact(:,k));
+    G = gradient(@(x)fun(x),xExact(:,k)).';
     
     alpha = norm(G)^2 / (G.' * H * G);
-    alpha = fminsearch(@(alpha)fun(xExact(:,end) - alpha * G), alpha, options);
-    xnew = xExact(:,end) - alpha * G;
-    xExact = [xExact, xnew];
-    funValExact = [funValExact, fun(xExact(:,end))];
+    alpha = fminsearch(@(alpha)fun(xExact(:,k) - alpha * G), alpha, options);
+    xExact(:,k+1) = xExact(:,k) - alpha * G;
+    funValExact(k+1) = fun(xExact(:,k+1));
 end
 %%% End exact line search
 
@@ -64,31 +67,32 @@ xFinite = {};
 funValFinite = {};
 
 parfor hIndex = 1:length(h)
-    xFinite{hIndex} = x0;
-    funValFinite{hIndex} = fun(xFinite{hIndex}(:,end));
+    xFinite{hIndex} = zeros(2,nExact);
+    funValFinite{hIndex} = zeros(1,nExact);
+    xFinite{hIndex}(:,1) = x0;
+    funValFinite{hIndex}(1) = fun(xFinite{hIndex}(:,1));
     for k = 1:nExact
-        G = gradient(@(x)fun(x),xFinite{hIndex}(:,end)).';
+        G = gradient(@(x)fun(x),xFinite{hIndex}(:,k)).';
         h1 = h(hIndex)/norm(G); %/ sqrt(k);
-        g2 = 2/h1 * ( 1/h1 * (fun(xFinite{hIndex}(:,end) - h1 * G) - fun(xFinite{hIndex}(:,end))) + norm(G)^2);
+        g2 = 2/h1 * ( 1/h1 * (fun(xFinite{hIndex}(:,k) - h1 * G) - fun(xFinite{hIndex}(:,k))) + norm(G)^2);
         alpha = norm(G)^2 / g2;
         %disp(fun(xFinite{hIndex}(:,end) - h1 * G) - fun(xFinite{hIndex}(:,end)))
-        xnew = xFinite{hIndex}(:,end) - alpha * G;
-        xFinite{hIndex} = [xFinite{hIndex}, xnew];
-        funValFinite{hIndex} = [funValFinite{hIndex}, fun(xFinite{hIndex}(:,end))];
+        xFinite{hIndex}(:,k+1) = xFinite{hIndex}(:,k) - alpha * G;
+        funValFinite{hIndex}(k+1) = fun(xFinite{hIndex}(:,k+1));
     end
 end
 % End FINITE h
 
 %%% PLOT TERRAIN
-p1 = plot(x(1,:), x(2,:), '.-', 'Color', 'k', 'LineWidth', lineWidth);
-plot(x(1,:), x(2,:),['k', 'o'], 'LineWidth', lineWidth)
+p1 = plot(x(1,:), x(2,:), '.-', 'Color', 'k', 'LineWidth', lineWidth, 'Marker', 'x');
+%plot(x(1,:), x(2,:),['k', 'o'], 'LineWidth', lineWidth)
 
-p2 = plot(xExact(1,:), xExact(2,:), '.-', 'Color', defaultPlotColors(1), 'LineWidth', lineWidth);
-plot(xExact(1,:), xExact(2,:), 'o', 'Color', defaultPlotColors(1), 'LineWidth', lineWidth)
+p2 = plot(xExact(1,:), xExact(2,:), '.-', 'Color', defaultPlotColors(1), 'LineWidth', lineWidth, 'Marker', 'o');
+%plot(xExact(1,:), xExact(2,:), 'o', 'Color', defaultPlotColors(1), 'LineWidth', lineWidth)
 
 % Finite h
-p3 = plot(xFinite{1}(1,:), xFinite{1}(2,:), '.-', 'Color', defaultPlotColors(3), 'LineWidth', lineWidth*.8);
-p4 = plot(xFinite{2}(1,:), xFinite{2}(2,:), '.-', 'Color', defaultPlotColors(2), 'LineWidth', lineWidth*.8);
+p3 = plot(xFinite{1}(1,:), xFinite{1}(2,:), '.-', 'Color', defaultPlotColors(3), 'LineWidth', lineWidth*.8, 'Marker', 's');
+p4 = plot(xFinite{2}(1,:), xFinite{2}(2,:), '.-', 'Color', defaultPlotColors(2), 'LineWidth', lineWidth*.8, 'Marker', '^');
 p3.Color(4) = .6;
 p4.Color(4) = .6;
 
@@ -100,42 +104,50 @@ elseif name == "exp"
 else
     loc = 'northwest';
 end
-leg = legend([p1,p2,p3,p4],...
-        {'Newton-like line search', 'Exact line seacrch',...
-         'Finite step size, {\ith}_2',...
+leg = legend([p2,p1,p3,p4],...
+        {'Exact line seacrch',...
+         'Newton-like line search',...
+         'Finite step size, {\ith}_1',...
          'Finite step size, {\ith}_2'},...
         'Location', loc);
 xlabel('{\itx}_1')
 ylabel('{\itx}_2')
 
-figureDim = [10, 8];
-figuresize(figureDim(1)*.7/.45, figureDim(2)*.7/.45, 'cm')
+figureDim = [8, 6];
+figuresize(figureDim(1)*1.8, figureDim(2)*1.8, 'cm')
 saveas(gcf, ['convergence-', name, '-terrain.pdf'])
 
-%%% FUNCTION CONVERGENCE
-figure; hold on;
-p1 = plot(0:nNewtonLike, abs(funVal - optVal), '.-', 'Color', 'k', 'LineWidth', lineWidth);
-p2 = plot(0:nExact, abs(funValExact - optVal), '.-', 'Color', defaultPlotColors(1), 'LineWidth', lineWidth);
+lineWidth = 1.3;
 
-p3 = plot(0:nExact, abs(funValFinite{1} - optVal), '.-', 'Color', defaultPlotColors(3), 'LineWidth', lineWidth*0.8);
-p4 = plot(0:nExact, abs(funValFinite{2} - optVal), '.-', 'Color', defaultPlotColors(2), 'LineWidth', lineWidth*0.8);
+%%% FUNCTION VALUE CONVERGENCE
+figure; hold on;
+p1 = plot(0:nNewtonLike, abs(funVal - optVal), '.-', 'Color', 'k', 'LineWidth', lineWidth, 'Marker', 'x');
+p2 = plot(0:nExact, abs(funValExact - optVal), '.-', 'Color', defaultPlotColors(1), 'LineWidth', lineWidth, 'Marker', 'o');
+p3 = plot(0:nExact, abs(funValFinite{1} - optVal), '.-', 'Color', defaultPlotColors(3), 'LineWidth', lineWidth*0.8, 'Marker', 's');
+
+% Some hand waving, preventing log(0)
+ploty = abs(funValFinite{2} - optVal);
+zeroes = (ploty ~= 0);
+plotx = 0:nExact;
+
+p4 = plot(plotx(zeroes), ploty(zeroes), '.-', 'Color', defaultPlotColors(2), 'LineWidth', lineWidth*0.8, 'Marker', '^');
 p3.Color(4) = .6;
 p4.Color(4) = .6;
 
 set(gca, 'YScale', 'log')
 title('Function value convergence')
-ylim([1e-16, inf])
+ylim([1e-13, inf])
 xlim([0, max(nExact, nNewtonLike)])
 %if name == "rosenbrock"
 %    loc = 'southwest';
 %else
     loc = 'northeast';
 %end
-leg = legend([p1,p2,p3,p4],...
-        {'Newton-like line search', 'Exact line seacrch',...
-         'Finite step size, {\ith}_2',...
-         'Finite step size, {\ith}_2'},...
-        'Location', loc);
+%leg = legend([p1,p2,p3,p4],...
+%        {'Newton-like line search', 'Exact line seacrch',...
+%         'Finite step size, {\ith}_1',...
+%         'Finite step size, {\ith}_2'},...
+%        'Location', loc);
 xlabel('Iteration, {\itk}')
 ylabel('|{\itf} ({\itx}_{\itk}) − {\itf} *|')
 
@@ -144,30 +156,30 @@ saveas(gcf, ['convergence-', name, '-value.pdf'])
 
 %%% ARGUMENT CONVERGENCE
 figure; hold on;
-p1 = plot(0:nNewtonLike, vecnorm(x- optimum), '.-', 'Color', 'k', 'LineWidth', lineWidth);
-p2 = plot(0:nExact, vecnorm(xExact- optimum), '.-', 'Color', defaultPlotColors(1), 'LineWidth', lineWidth);
+p1 = plot(0:nNewtonLike, vecnorm(x- optimum), '.-', 'Color', 'k', 'LineWidth', lineWidth, 'Marker', 'x');
+p2 = plot(0:nExact, vecnorm(xExact- optimum), '.-', 'Color', defaultPlotColors(1), 'LineWidth', lineWidth, 'Marker', 'o');
 
-p3 = plot(0:nExact, vecnorm(xFinite{1}- optimum), '.-', 'Color', defaultPlotColors(3), 'LineWidth', lineWidth*.8);
-p4 = plot(0:nExact, vecnorm(xFinite{2}- optimum), '.-', 'Color', defaultPlotColors(2), 'LineWidth', lineWidth*.8);
+p3 = plot(0:nExact, vecnorm(xFinite{1}- optimum), '.-', 'Color', defaultPlotColors(3), 'LineWidth', lineWidth*.8, 'Marker', 's');
+p4 = plot(0:nExact, vecnorm(xFinite{2}- optimum), '.-', 'Color', defaultPlotColors(2), 'LineWidth', lineWidth*.8, 'Marker', '^');
 p3.Color(4) = .6;
 p4.Color(4) = .6;
 
 set(gca, 'YScale', 'log')
 title('Argument convergence')
-ylim([1e-16, inf])
+ylim([1e-13, inf])
 xlim([0, max(nExact, nNewtonLike)])
 if name == "rosenbrock"
     loc = 'northeast';
 else
     loc = 'northeast';
 end
-leg = legend([p1,p2,p3,p4],...
-        {'Newton-like line search', 'Exact line seacrch',...
-         'Finite step size, {\ith}_2',...
-         'Finite step size, {\ith}_2'},...
-        'Location', loc);
+%leg = legend([p1,p2,p3,p4],...
+%        {'Newton-like line search', 'Exact line seacrch',...
+%         'Finite step size, {\ith}_2',...
+%         'Finite step size, {\ith}_2'},...
+%        'Location', loc);
 xlabel('Iteration, {\itk}')
-ylabel('∥{\itx}_{\itk} − {\itx}*∥_2')
+ylabel('∥{\itx}_{\itk} − {\itx}*∥')
 
 figuresize(figureDim(1), figureDim(2), 'cm')
 saveas(gcf, ['convergence-', name, '-position.pdf'])

@@ -64,6 +64,8 @@ classdef capsRect
         end
         
         function w = weights(obj)
+            w = [1,1,1,1,1];
+            return
             w = [1,1,1/8,1,1]/10; % bigger => slower
             wCapsule = obj.capsule.weights;
             bigCapsule = obj.capsule;

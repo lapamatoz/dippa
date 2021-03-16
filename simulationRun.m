@@ -1,4 +1,4 @@
-r = 2;
+r = 0;
 
 load = true;
 
@@ -45,10 +45,10 @@ for q = 1:6
     end
     BFGS(q) = BFGS(q).simulate(min(3*r, maxLen + r - length(BFGS(q).res)),"no");
     BFGS(q).save();
-    Matlab(q) = Matlab(q).simulate(min(3*r, maxLen + r - length(Matlab(q).res)),"no");
-    Matlab(q).save();
-    cyclic(q) = cyclic(q).simulate(min(3*r, maxLen + r - length(cyclic(q).res)),"no");
-    cyclic(q).save();
+    %Matlab(q) = Matlab(q).simulate(min(3*r, maxLen + r - length(Matlab(q).res)),"no");
+    %Matlab(q).save();
+    %cyclic(q) = cyclic(q).simulate(min(3*r, maxLen + r - length(cyclic(q).res)),"no");
+    %cyclic(q).save();
     %cyclicShoppingCart(q) = cyclicShoppingCart(q).simulate(min(3*r, maxLen + r - length(cyclicShoppingCart(q).res)),"no");
     %cyclicShoppingCart(q).save();
 end

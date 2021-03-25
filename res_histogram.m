@@ -15,7 +15,7 @@ if scen == 1
 elseif scen == 2
     titletxt = "Box: 1400 x 2000 mm";
 elseif scen == 3
-    titletxt = "Box: 1350 x 2350 mm";
+    titletxt = "Box: 1350 x 1400 mm";
 end
 
 gradMlengths = zeros(1,length(gradM(scen).res));
@@ -163,7 +163,7 @@ if scen == 4
 elseif scen == 5
     titletxt = "Box: 1400 x 2000 mm";
 elseif scen == 6
-    titletxt = "Box: 1350 x 2350 mm";
+    titletxt = "Box: 1350 x 1400 mm";
 end
 
 gradMlengths = zeros(1,length(gradM(scen).res));

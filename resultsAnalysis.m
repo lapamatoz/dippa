@@ -102,7 +102,7 @@ classdef resultsAnalysis
                 videoFile = NaN;
             end
             Parray = elevatorProblem;
-            parfor r = 1:runs % use non-parallel for-loop for video!!
+            for r = 1:runs % use non-parallel for-loop for video!!
                 P = elevatorProblem;
                 P = P.addShape(objProblem("staticShape"));
                 P.box = box;

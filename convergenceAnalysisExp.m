@@ -149,7 +149,7 @@ xlim([0, max(nExact, nNewtonLike)])
 %         'Finite step size, {\ith}_2'},...
 %        'Location', loc);
 xlabel('Iteration, {\itk}')
-ylabel('|{\itf} ({\itx}_{\itk}) − {\itf} *|')
+ylabel('|{\itf} ({\bfx}_{\itk}) − {\itf} _*|')
 
 figuresize(figureDim(1), figureDim(2), 'cm')
 saveas(gcf, ['convergence-', name, '-value.pdf'])
@@ -179,7 +179,7 @@ end
 %         'Finite step size, {\ith}_2'},...
 %        'Location', loc);
 xlabel('Iteration, {\itk}')
-ylabel('∥{\itx}_{\itk} − {\itx}*∥')
+ylabel('∥{\bfx}_{\itk} − {\bfx}_*∥')
 
 figuresize(figureDim(1), figureDim(2), 'cm')
 saveas(gcf, ['convergence-', name, '-position.pdf'])

@@ -144,7 +144,10 @@ for q = 1:6
     cyclicShoppingCart(q).problem('method2') = @(P,p)P.optimizeCyclic('triangle',p);
     cyclicShoppingCart(q).problem('squared') = 'no';
     cyclicShoppingCart(q).problem('changeIter') = 0;
-    cyclicShoppingCart(q).problem('h2Step') = 'no';
+    cyclicShoppingCart(q).problem('h2Step') = 'diminishing';
+    cyclicShoppingCart(q).problem("objectPlacement") = "anywhere";
+    cyclicShoppingCart(q).problem("staticObjectPlacement") = "leaveBe"; %"anywhere";
+    
     cyclicShoppingCart(q).name = "New Algorithm Shopping Carts";
     if q == 1 || q == 4
         cyclicShoppingCart(q).problem('box') = bigbox;
@@ -168,79 +171,86 @@ for q = 1:6
         cyclicShoppingCart(q).problem("staticShape") = r;
         cyclicShoppingCart(q).name = join([cyclicShoppingCart(q).name, "horz"]);
     else
+        r = cyclicShoppingCart(q).problem("staticShape");
+        B = cyclicShoppingCart(q).problem('box');
+        r.position = [B.width/2  -  r.width/2,...
+                     -B.height/2 + r.height/2];
+        cyclicShoppingCart(q).problem("staticShape") = r;
         cyclicShoppingCart(q).name = join([cyclicShoppingCart(q).name, "vert"]);
     end
 end
 
+%%% Different cases for two shopping carts.
+%%% Out of the scope of the thesis!
 
-twoShoppingCarts = resultsAnalysis;
-q = 1;
-for orient1 = 1:2 % 1: pysty, 2: vaaka
-    for orient2 = 1:2 % 1: pysty, 2: vaaka
-        for corner1 = 1
-            for corner2 = 1:5 % 1: ekan päällä, 2: ekan vasemmalla puolella, 3: ylä-o, 4: ylä-v, 5: ala-v
-                for boxSize = 1:3 % 1: big, 2: mid, 3: small
-                    twoShoppingCarts(q).name = "New Algorithm Shopping Carts";
-                    twoShoppingCarts(q) = resultsAnalysis;
-                    twoShoppingCarts(q).name = join([twoShoppingCarts(q).name, "box-", num2str(boxSize),...
-                                                                                   "_orient1-", num2str(orient1),...
-                                                                                   "_orient2-", num2str(orient2),...
-                                                                                   "_corner2-", num2str(corner2),...
-                                                                                   ]);
-                    twoShoppingCarts(q).problem = containers.Map;
-                    twoShoppingCarts(q) = twoShoppingCarts(q).initialize();
-                    twoShoppingCarts(q).problem('method2') = @(P,p)P.optimizeCyclic('Matlab',p);
-                    twoShoppingCarts(q).problem('squared') = 'no';
-                    twoShoppingCarts(q).problem('changeIter') = 0;
-                    twoShoppingCarts(q).problem('h2Step') = 'diminishing';
-                    twoShoppingCarts(q).problem('shape1') = twoShoppingCarts(q).problem('shape1').capsule;
-                    sc1 = twoShoppingCarts(q).problem('staticShape');
-                    sc2 = sc1;
-                    
-                    if boxSize == 1
-                        twoShoppingCarts(q).problem('box') = bigbox;
-                    elseif boxSize == 2
-                        twoShoppingCarts(q).problem('box') = midbox;
-                    elseif boxSize == 3
-                        twoShoppingCarts(q).problem('box') = smabox;
-                    end
-                    B = twoShoppingCarts(q).problem('box');
-                    if orient1 == 2
-                        scWidth = sc1.width;
-                        sc1.width = sc1.height;
-                        sc1.height = scWidth;
-                        sc1.position = [B.width/2  - sc1.width/2,...
-                                       -B.height/2 + sc1.height/2];
-                    elseif orient1 == 1
-                        sc1.position = [B.width/2  - sc1.width/2,...
-                                       -B.height/2 + sc1.height/2];
-                    end
-                    if orient2 == 2
-                        scWidth = sc2.width;
-                        sc2.width = sc2.height;
-                        sc2.height = scWidth;
-                    end
-                    
-                    if corner2 == 1
-                        sc2.position = [B.width/2  - sc2.width/2,...
-                                       -B.height/2 + sc1.height + sc2.height/2];
-                    elseif corner2 == 2
-                        sc2.position = [B.width/2  - sc1.width - sc2.width/2,...
-                                       -B.height/2 + sc2.height/2];
-                    elseif corner2 == 3
-                        sc2.position = [B.width/2  - sc2.width/2,...
-                                        B.height/2 - sc2.height/2];
-                    elseif corner2 == 4
-                        sc2.position = [-B.width/2  + sc2.width/2,...
-                                         B.height/2 - sc2.height/2];
-                    elseif corner2 == 5
-                        sc2.position = [-B.width/2  + sc2.width/2,...
-                                        -B.height/2 + sc2.height/2];
-                    end
-                    twoShoppingCarts(q).problem('staticShape') = [sc1,sc2];
-                    q = q+1;
-                end
-            end
-        end
-    end
-end
+% twoShoppingCarts = resultsAnalysis;
+% q = 1;
+% for orient1 = 1:2 % 1: pysty, 2: vaaka
+%     for orient2 = 1:2 % 1: pysty, 2: vaaka
+%         for corner1 = 1
+%             for corner2 = 1:5 % 1: ekan päällä, 2: ekan vasemmalla puolella, 3: ylä-o, 4: ylä-v, 5: ala-v
+%                 for boxSize = 1:3 % 1: big, 2: mid, 3: small
+%                     twoShoppingCarts(q).name = "New Algorithm Shopping Carts";
+%                     twoShoppingCarts(q) = resultsAnalysis;
+%                     twoShoppingCarts(q).name = join([twoShoppingCarts(q).name, "box-", num2str(boxSize),...
+%                                                                                    "_orient1-", num2str(orient1),...
+%                                                                                    "_orient2-", num2str(orient2),...
+%                                                                                    "_corner2-", num2str(corner2),...
+%                                                                                    ]);
+%                     twoShoppingCarts(q).problem = containers.Map;
+%                     twoShoppingCarts(q) = twoShoppingCarts(q).initialize();
+%                     twoShoppingCarts(q).problem('method2') = @(P,p)P.optimizeCyclic('Matlab',p);
+%                     twoShoppingCarts(q).problem('squared') = 'no';
+%                     twoShoppingCarts(q).problem('changeIter') = 0;
+%                     twoShoppingCarts(q).problem('h2Step') = 'diminishing';
+%                     twoShoppingCarts(q).problem('shape1') = twoShoppingCarts(q).problem('shape1').capsule;
+%                     sc1 = twoShoppingCarts(q).problem('staticShape');
+%                     sc2 = sc1;
+%                     
+%                     if boxSize == 1
+%                         twoShoppingCarts(q).problem('box') = bigbox;
+%                     elseif boxSize == 2
+%                         twoShoppingCarts(q).problem('box') = midbox;
+%                     elseif boxSize == 3
+%                         twoShoppingCarts(q).problem('box') = smabox;
+%                     end
+%                     B = twoShoppingCarts(q).problem('box');
+%                     if orient1 == 2
+%                         scWidth = sc1.width;
+%                         sc1.width = sc1.height;
+%                         sc1.height = scWidth;
+%                         sc1.position = [B.width/2  - sc1.width/2,...
+%                                        -B.height/2 + sc1.height/2];
+%                     elseif orient1 == 1
+%                         sc1.position = [B.width/2  - sc1.width/2,...
+%                                        -B.height/2 + sc1.height/2];
+%                     end
+%                     if orient2 == 2
+%                         scWidth = sc2.width;
+%                         sc2.width = sc2.height;
+%                         sc2.height = scWidth;
+%                     end
+%                     
+%                     if corner2 == 1
+%                         sc2.position = [B.width/2  - sc2.width/2,...
+%                                        -B.height/2 + sc1.height + sc2.height/2];
+%                     elseif corner2 == 2
+%                         sc2.position = [B.width/2  - sc1.width - sc2.width/2,...
+%                                        -B.height/2 + sc2.height/2];
+%                     elseif corner2 == 3
+%                         sc2.position = [B.width/2  - sc2.width/2,...
+%                                         B.height/2 - sc2.height/2];
+%                     elseif corner2 == 4
+%                         sc2.position = [-B.width/2  + sc2.width/2,...
+%                                          B.height/2 - sc2.height/2];
+%                     elseif corner2 == 5
+%                         sc2.position = [-B.width/2  + sc2.width/2,...
+%                                         -B.height/2 + sc2.height/2];
+%                     end
+%                     twoShoppingCarts(q).problem('staticShape') = [sc1,sc2];
+%                     q = q+1;
+%                 end
+%             end
+%         end
+%     end
+% end

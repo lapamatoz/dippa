@@ -1,7 +1,7 @@
-scenario = 6;
-method = gradM;
+%scenario = 6;
+method = cyclic;
 
-%for scenario = 1:6
+for scenario = 1:3
 lengths = zeros(1,length(method(scenario).res));
 
 for q = 1:length(method(scenario).res)
@@ -38,8 +38,8 @@ set(gca,'xtick',[])
 ylabel('{\itA} and {\itE} function evaluations')
 
 %annotation('textbox',[.9 .5 .1 .2],'String','Text outside the axes','EdgeColor','none')
-annotation('textbox',[0.31 0 .3 .1],'String','T_P','EdgeColor','none')
-annotation('textbox',[0.68 0 .3 .1],'String','T_Q','EdgeColor','none')
+annotation('textbox',[0.31 0 .3 .1],'String','{\itT}_{\itP}','EdgeColor','none')
+annotation('textbox',[0.68 0 .3 .1],'String','{\itT}_{\itQ}','EdgeColor','none')
 
 if scenario == 1 || scenario == 4
     title('Box size: 1700 x 2350')
@@ -49,5 +49,12 @@ else
     title('Box size: 1350 x 1400')
 end
 
-figuresize(7, 7, 'cm')
-saveas(gcf, join(['TP-TQ', method(scenario).name, '.pdf']))
+figuresize(7, 8, 'cm')
+%saveas(gcf, join(['TP-TQ', method(scenario).name, '.pdf']))
+end
+
+for scenario = 1:1
+    drawProblem(method(scenario).Pbest(1),false)
+    figuresize(8, 10, 'cm')
+    saveas(gcf, join(['liftSetup', method(scenario).name, '.pdf']))
+end

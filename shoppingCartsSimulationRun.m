@@ -114,7 +114,7 @@ for boxSize = 1:3
     q = q+1;
 end
 
-r = 0;
+r = 1;
 
 load = true;
 

@@ -196,6 +196,7 @@ classdef elevatorProblem
             limit = 0.5;
             options = optimset('Display','off','MaxIter',4,'TolX',1e-4);
             [aG,fG,~,out2] = fminbnd(fun,0,2*limit,options);
+            
             if fa < fG
                 x = x - H1g*a;
                 obj.calculations = obj.calculations + out1.funcCount * numofcalc(obj,NaN,"allCombOfTwo");
@@ -203,57 +204,6 @@ classdef elevatorProblem
             else
                 x = x - aG*grad;
                 obj.calculations = obj.calculations + out2.funcCount * numofcalc(obj,NaN,"allCombOfTwo");
-                %disp('grad')
-            end
-            obj = obj.decisionVariablesToProblem(x);
-        end
-        
-        % Line search not timed
-        function obj = optimizeBFGSNoLine(obj,problem) % vanha versio
-            n = length(obj.shapes);
-            x = decisionVariablesFromProblem(obj);
-            %disp(x);
-            try
-                H = obj.data("HessianInv");
-                gOld = obj.data("previousGrad");
-                xOld = obj.data("previousPt");
-            catch
-                H = eye(length(x));
-                gOld = rand(length(x),1)*0.0001;
-                xOld = x + rand(length(x),1)*0.1;
-            end
-            if length(H) ~= length(x)
-                H = eye(length(x));
-                gOld = rand(length(x),1)*0.0001;
-                xOld = x + rand(length(x),1)*0.1;
-            end
-            [grad, obj] = fullGradient(obj,problem);
-            obj.data('previousPt') = x;
-            obj.data('previousGrad') = grad;
-            s = x - xOld;
-            y = grad - gOld;
-            %disp(H)
-            denominator = s.'*y;
-            if abs(denominator) > 1e-4
-                H = H + (s.'*y + y.'*H*y)*(s*s.')/(denominator)^2 - (H*y*s.' + s*y.'*H)/denominator;
-            end
-            obj.data('HessianInv') = H;
-            H1g = H*grad; %H2g = H*H*grad; H3g=H*H*H*grad;
-            fun = @(alpha)objectiveFunctionAll(obj, x - H1g*alpha, false, problem);
-            options = optimset('Display','off','MaxIter',6,'TolX',1e-4);
-            [a,fa,~,~] = fminbnd(fun,0.1,1.4,options);
-            
-            fun = @(alpha)objectiveFunctionAll(obj, x - alpha*grad, false, problem);
-            limit = 0.5;
-            options = optimset('Display','off','MaxIter',4,'TolX',1e-4);
-            [aG,fG,~,~] = fminbnd(fun,0,2*limit,options);
-            if fa < fG
-                x = x - H1g*a;
-                %obj.calculations = obj.calculations + out1.funcCount * numofcalc(obj,NaN,"allCombOfTwo");
-                %disp('hessian')
-            else
-                x = x - aG*grad;
-                %obj.calculations = obj.calculations + out2.funcCount * numofcalc(obj,NaN,"allCombOfTwo");
                 %disp('grad')
             end
             obj = obj.decisionVariablesToProblem(x);
@@ -317,19 +267,7 @@ classdef elevatorProblem
             obj = obj.decisionVariablesToProblem(x);
         end
         
-        % Line search not timed
-        function obj = optimizeFullGradientNoLine(obj,problem)
-            n = length(obj.shapes);
-            x = decisionVariablesFromProblem(obj);
-            [grad, obj] = fullGradient(obj,problem);
-            fun = @(alpha)objectiveFunctionAll(obj, x - alpha*grad, false, problem);
-            limit = 0.5;
-            options = optimset('Display','off','MaxIter',4,'TolX',1e-4);
-            [aG,~,~,~] = fminbnd(fun,0,2*limit,options);
-            %obj.calculations = obj.calculations + out.funcCount * numofcalc(obj,NaN,"allCombOfTwo");
-            x = x - aG*grad;
-            obj = obj.decisionVariablesToProblem(x);
-        end
+        
         
         function out = objectiveFunctionAll(obj, x, justCheckSolution, problem)
             n = length(obj.shapes);

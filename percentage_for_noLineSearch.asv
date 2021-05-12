@@ -1,0 +1,4 @@
+for q = 1:6
+    disp(length(expectedCalculations(gradMNoLine(q))) - length( expectedCalculations(gradM(q))))
+    disp(length(expectedCalculations(BFGSNoLine(q))) - length( expectedCalculations(BFGS(q))))
+end

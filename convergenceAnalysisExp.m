@@ -1,6 +1,10 @@
-plotPerformance(@(x)quadraticfun(x), 30, 30, 80, [-3,11], [-11,1], [10;-10], [0;0], 0, 'quadratic');
-plotPerformance(@(x)expfun(x), 31, 22, 40, [-3.5,1], [-4.5,.5], [-2; -4], [-log(2) / 2 - 1/20; 0], 2*sqrt(2) / exp(3/20), 'exp');
-plotPerformance(@(x)rosenbrockfun(x), 10500, 8000, 130, [-0.7,1.5], [-1.2,1.5], [0.5;-1], [1;1], 0, 'rosenbrock');
+%HessianM = hessian(@(x)quadraticfun(x),[0; 0])
+%HessianM = hessian(@(x)expfun(x),[-log(2) / 2 - 1/20; 0])
+%sum(eig(HessianM))/2
+
+plotPerformance(@(x)quadraticfun(x), 30, 30, 140, [-3,11], [-11,1], [10;-10], [0;0], 0, 'quadratic');
+plotPerformance(@(x)expfun(x), 31, 22, 100, [-3.5,1], [-4.5,.5], [-2; -4], [-log(2) / 2 - 1/20; 0], 2*sqrt(2) / exp(3/20), 'exp');
+plotPerformance(@(x)rosenbrockfun(x), 10500, 8000, 180, [-0.7,1.5], [-1.2,1.5], [0.5;-1], [1;1], 0, 'rosenbrock');
 %close all hidden
 % Rosenbrock with steps 10500, 8000 takes a lot of time
 
@@ -17,7 +21,11 @@ for i = 1:nContour
 end
 
 close all hidden
-contour(x1,x2,z.^0.5,8)
+if name == "exp"
+    contour(x1,x2,z.^0.5,40)
+else
+    contour(x1,x2,z.^0.5,12)
+end
 hold on
 %%% End drawing contours
 lineWidth = 1.5;
@@ -26,20 +34,19 @@ lineWidth = 1.5;
 %optVal = 2*sqrt(2) / exp(3/20);
 
 %%% Begin Newton-like line search
-
-x = zeros(2,nNewtonLike);
-funVal = zeros(1,nNewtonLike);
-x(:,1) = x0;
-funVal(1) = fun(x(:,1));
-
-for k = 1:nNewtonLike
-    H = hessian(@(x)fun(x),x(:,k));
-    G = gradient(@(x)fun(x),x(:,k)).';
-    
-    alpha = norm(G)^2 / (G.' * H * G);
-    x(:,k+1) = x(:,k) - alpha * G;
-    funVal(k+1) = fun(x(:,k+1));
-end
+% x = zeros(2,nNewtonLike);
+% funVal = zeros(1,nNewtonLike);
+% x(:,1) = x0;
+% funVal(1) = fun(x(:,1));
+% 
+% for k = 1:nNewtonLike
+%     H = hessian(@(x)fun(x),x(:,k));
+%     G = gradient(@(x)fun(x),x(:,k)).';
+%     
+%     alpha = norm(G)^2 / (G.' * H * G);
+%     x(:,k+1) = x(:,k) - alpha * G;
+%     funVal(k+1) = fun(x(:,k+1));
+% end
 %%% End Newton-like line search
 
 %%% Begin exact line search
@@ -83,18 +90,59 @@ parfor hIndex = 1:length(h)
 end
 % End FINITE h
 
-%%% PLOT TERRAIN
-p1 = plot(x(1,:), x(2,:), '.-', 'Color', 'k', 'LineWidth', lineWidth, 'Marker', 'x');
-%plot(x(1,:), x(2,:),['k', 'o'], 'LineWidth', lineWidth)
+%%% Begin constant line search
+% xConst = zeros(2,nNewtonLike);
+% funValConst = zeros(1,nNewtonLike);
+% xConst(:,1) = x0;
+% funValConst(1) = fun(xConst(:,1));
+% 
+% if name == "quadratic"
+%     alpha = 1/4 * 18;
+%     alpha = 1/alpha;
+%     alpha = 0.5*alpha;
+% elseif name == "exp"
+%     alpha = 0.5*(2.434449787006038 + 4.868899574012076);
+%     alpha = 0.04 * 1/alpha;
+% end
+% 
+% for k = 1:nNewtonLike
+%     G = gradient(@(x)fun(x),xConst(:,k)).';
+%     
+%     xConst(:,k+1) = xConst(:,k) - alpha * G;
+%     funValConst(k+1) = fun(xConst(:,k+1));
+% end
+%%% End constant line search
 
-p2 = plot(xExact(1,:), xExact(2,:), '.-', 'Color', defaultPlotColors(1), 'LineWidth', lineWidth, 'Marker', 'o');
-%plot(xExact(1,:), xExact(2,:), 'o', 'Color', defaultPlotColors(1), 'LineWidth', lineWidth)
+if name == "quadratic"
+    %%% PLOT TERRAIN
+    %'or','MarkerFaceColor','r'
+    %p1 = plot(x(1,:), x(2,:), '.-', 'Color', 'k', 'LineWidth', lineWidth*0.6, 'Marker', 'o', 'MarkerFaceColor', 'k');
+    %plot(x(1,:), x(2,:),['k', 'o'], 'LineWidth', lineWidth)
 
-% Finite h
-p3 = plot(xFinite{1}(1,:), xFinite{1}(2,:), '.-', 'Color', defaultPlotColors(3), 'LineWidth', lineWidth*.8, 'Marker', 's');
-p4 = plot(xFinite{2}(1,:), xFinite{2}(2,:), '.-', 'Color', defaultPlotColors(2), 'LineWidth', lineWidth*.8, 'Marker', '^');
-p3.Color(4) = .6;
-p4.Color(4) = .6;
+    p2 = plot(xExact(1,:), xExact(2,:), '.-', 'Color', 'k', 'LineWidth', lineWidth*0.8, 'Marker', 'o', 'MarkerFaceColor', 'k', 'MarkerSize',4);
+    %plot(xExact(1,:), xExact(2,:), 'o', 'Color', defaultPlotColors(1), 'LineWidth', lineWidth)
+
+    % Finite h
+    p3 = plot(xFinite{1}(1,:), xFinite{1}(2,:), '.-', 'Color', 'k', 'LineWidth', lineWidth*.8, 'Marker', 'o', 'MarkerFaceColor', 'k', 'MarkerSize',4);
+    p4 = plot(xFinite{2}(1,:), xFinite{2}(2,:), '.-', 'Color', 'k', 'LineWidth', lineWidth*.8, 'Marker', 'o', 'MarkerFaceColor', 'k', 'MarkerSize',4);
+    %pConst = plot(xConst(1,:), xConst(2,:), '.-', 'Color', 'b', 'LineWidth', lineWidth*0.6, 'Marker', 'o', 'MarkerFaceColor', 'b');
+else
+    %%% PLOT TERRAIN
+    %p1 = plot(x(1,:), x(2,:), '.-', 'Color', 'k', 'LineWidth', lineWidth, 'Marker', 'x');
+    %plot(x(1,:), x(2,:),['k', 'o'], 'LineWidth', lineWidth)
+
+    p2 = plot(xExact(1,:), xExact(2,:), '.-', 'Color', 'k', 'LineWidth', lineWidth*0.8, 'Marker', 'o', 'MarkerFaceColor', 'k', 'MarkerSize',4);
+    %plot(xExact(1,:), xExact(2,:), 'o', 'Color', defaultPlotColors(1), 'LineWidth', lineWidth)
+
+    % Finite h
+    p3 = plot(xFinite{1}(1,:), xFinite{1}(2,:), '.-', 'Color', defaultPlotColors(2), 'LineWidth', lineWidth*.8, 'Marker', 's');
+    p4 = plot(xFinite{2}(1,:), xFinite{2}(2,:), '.-', 'Color', defaultPlotColors(1), 'LineWidth', lineWidth*.8, 'Marker', '^');
+    
+    %p3.Color(4) = .6;
+    %p4.Color(4) = .6;
+    
+    %pConst = plot(xConst(1,:), xConst(2,:), '.-', 'Color', 'b', 'LineWidth', lineWidth*0.6, 'Marker', 'o', 'MarkerFaceColor', 'b');
+end
 
 daspect([1 1 1])
 if name == "quadratic"
@@ -104,35 +152,55 @@ elseif name == "exp"
 else
     loc = 'northwest';
 end
-leg = legend([p2,p1,p3,p4],...
-        {'Exact line seacrch',...
-         'Newton-like line search',...
-         'Finite step size, {\ith}_1',...
-         'Finite step size, {\ith}_2'},...
+leg = legend([p2,p3,p4],...
+        {'Exact line seacrch',... %'Newton-like line search',...
+         'Quadratic line search, {\ith}_1',...
+         'Quadratic line search, {\ith}_2'},...
         'Location', loc);
 xlabel('{\itx}_1')
 ylabel('{\itx}_2')
 
 figureDim = [8, 6];
 figuresize(figureDim(1)*1.8, figureDim(2)*1.8, 'cm')
-saveas(gcf, ['convergence-', name, '-terrain.pdf'])
+%saveas(gcf, ['convergence-', name, '-terrain.png'])
+exportgraphics(gcf,['convergence-', name, '-terrain.png'],'Resolution',300)
 
 lineWidth = 1.3;
 
 %%% FUNCTION VALUE CONVERGENCE
 figure; hold on;
-p1 = plot(0:nNewtonLike, abs(funVal - optVal), '.-', 'Color', 'k', 'LineWidth', lineWidth, 'Marker', 'x');
-p2 = plot(0:nExact, abs(funValExact - optVal), '.-', 'Color', defaultPlotColors(1), 'LineWidth', lineWidth, 'Marker', 'o');
-p3 = plot(0:nExact, abs(funValFinite{1} - optVal), '.-', 'Color', defaultPlotColors(3), 'LineWidth', lineWidth*0.8, 'Marker', 's');
 
-% Some hand waving, preventing log(0)
-ploty = abs(funValFinite{2} - optVal);
-zeroes = (ploty ~= 0);
-plotx = 0:nExact;
+if name == "quadratic"
+    
+    %p1 = plot(0:nNewtonLike, abs(funVal - optVal), '.-', 'Color', 'k', 'LineWidth', lineWidth*0.6, 'Marker', 'o', 'MarkerFaceColor', 'k');
+    p2 = plot(0:nExact, abs(funValExact - optVal), '.-', 'Color', 'k', 'LineWidth', lineWidth*0.8, 'Marker', 'o', 'MarkerFaceColor', 'k', 'MarkerSize',4);
+    p3 = plot(0:nExact, abs(funValFinite{1} - optVal), '.-', 'Color', 'k', 'LineWidth', lineWidth*0.8, 'Marker', 'o', 'MarkerFaceColor', 'k', 'MarkerSize',4);
 
-p4 = plot(plotx(zeroes), ploty(zeroes), '.-', 'Color', defaultPlotColors(2), 'LineWidth', lineWidth*0.8, 'Marker', '^');
-p3.Color(4) = .6;
-p4.Color(4) = .6;
+    % Some hand waving, preventing log(0)
+    ploty = abs(funValFinite{2} - optVal);
+    zeroes = (ploty ~= 0);
+    plotx = 0:nExact;
+
+    p4 = plot(plotx(zeroes), ploty(zeroes), '.-', 'Color', 'k', 'LineWidth', lineWidth*0.8, 'Marker', 'o', 'MarkerFaceColor', 'k', 'MarkerSize',4);
+    p3.Color(4) = .6;
+    p4.Color(4) = .6;
+    %pConst = plot(0:nNewtonLike, abs(funValConst - optVal), '.-', 'Color', 'b', 'LineWidth', lineWidth*0.6, 'Marker', 'o', 'MarkerFaceColor', 'b');
+else
+    
+    %p1 = plot(0:nNewtonLike, abs(funVal - optVal), '.-', 'Color', 'k', 'LineWidth', lineWidth, 'Marker', 'x');
+    p2 = plot(0:nExact, abs(funValExact - optVal), '.-', 'Color', 'k', 'LineWidth', lineWidth*0.8, 'Marker', 'o', 'MarkerFaceColor', 'k', 'MarkerSize',4);
+    p3 = plot(0:nExact, abs(funValFinite{1} - optVal), '.-', 'Color', defaultPlotColors(2), 'LineWidth', lineWidth*0.8, 'Marker', 's');
+
+    % Some hand waving, preventing log(0)
+    ploty = abs(funValFinite{2} - optVal);
+    zeroes = (ploty ~= 0);
+    plotx = 0:nExact;
+
+    p4 = plot(plotx(zeroes), ploty(zeroes), '.-', 'Color', defaultPlotColors(1), 'LineWidth', lineWidth*0.8, 'Marker', '^');
+    %p3.Color(4) = .6;
+    %p4.Color(4) = .6;
+
+end
 
 set(gca, 'YScale', 'log')
 title('Function value convergence')
@@ -149,20 +217,33 @@ xlim([0, max(nExact, nNewtonLike)])
 %         'Finite step size, {\ith}_2'},...
 %        'Location', loc);
 xlabel('Iteration, {\itk}')
-ylabel('|{\itf} ({\bfx}_{\itk}) − {\itf} _*|')
+ylabel('|{\itf} ({\bfx}_{\itk}) − {\itf} ({\bfx}_*) |')
 
 figuresize(figureDim(1), figureDim(2), 'cm')
-saveas(gcf, ['convergence-', name, '-value.pdf'])
+yticks([10^-13, 10^-10, 10^-5, 10^0])
+%saveas(gcf, ['convergence-', name, '-value.png'])
+exportgraphics(gcf,['convergence-', name, '-value.png'],'Resolution',300)
 
 %%% ARGUMENT CONVERGENCE
 figure; hold on;
-p1 = plot(0:nNewtonLike, vecnorm(x- optimum), '.-', 'Color', 'k', 'LineWidth', lineWidth, 'Marker', 'x');
-p2 = plot(0:nExact, vecnorm(xExact- optimum), '.-', 'Color', defaultPlotColors(1), 'LineWidth', lineWidth, 'Marker', 'o');
 
-p3 = plot(0:nExact, vecnorm(xFinite{1}- optimum), '.-', 'Color', defaultPlotColors(3), 'LineWidth', lineWidth*.8, 'Marker', 's');
-p4 = plot(0:nExact, vecnorm(xFinite{2}- optimum), '.-', 'Color', defaultPlotColors(2), 'LineWidth', lineWidth*.8, 'Marker', '^');
-p3.Color(4) = .6;
-p4.Color(4) = .6;
+if name == "quadratic"
+    %p1 = plot(0:nNewtonLike, vecnorm(x- optimum), '.-', 'Color', 'k', 'LineWidth', lineWidth*0.6, 'Marker', 'o', 'MarkerFaceColor', 'k');
+    p2 = plot(0:nExact, vecnorm(xExact- optimum), '.-', 'Color', 'k', 'LineWidth', lineWidth*0.8, 'Marker', 'o', 'MarkerFaceColor', 'k', 'MarkerSize',4);
+
+    p3 = plot(0:nExact, vecnorm(xFinite{1}- optimum), '.-', 'Color', 'k', 'LineWidth', lineWidth*0.8, 'Marker', 'o', 'MarkerFaceColor', 'k', 'MarkerSize',4);
+    p4 = plot(0:nExact, vecnorm(xFinite{2}- optimum), '.-', 'Color', 'k', 'LineWidth', lineWidth*0.8, 'Marker', 'o', 'MarkerFaceColor', 'k', 'MarkerSize',4);
+    p3.Color(4) = .6;
+    p4.Color(4) = .6;
+else
+    %p1 = plot(0:nNewtonLike, vecnorm(x- optimum), '.-', 'Color', 'k', 'LineWidth', lineWidth, 'Marker', 'x');
+    p2 = plot(0:nExact, vecnorm(xExact- optimum), '.-', 'Color', 'k', 'LineWidth', lineWidth*0.8, 'Marker', 'o', 'MarkerFaceColor', 'k', 'MarkerSize',4);
+
+    p3 = plot(0:nExact, vecnorm(xFinite{1}- optimum), '.-', 'Color', defaultPlotColors(2), 'LineWidth', lineWidth*.8, 'Marker', 's');
+    p4 = plot(0:nExact, vecnorm(xFinite{2}- optimum), '.-', 'Color', defaultPlotColors(1), 'LineWidth', lineWidth*.8, 'Marker', '^');
+    %p3.Color(4) = .6;
+    %p4.Color(4) = .6;
+end
 
 set(gca, 'YScale', 'log')
 title('Argument convergence')
@@ -182,7 +263,9 @@ xlabel('Iteration, {\itk}')
 ylabel('∥{\bfx}_{\itk} − {\bfx}_*∥')
 
 figuresize(figureDim(1), figureDim(2), 'cm')
-saveas(gcf, ['convergence-', name, '-position.pdf'])
+yticks([10^-13, 10^-10, 10^-5, 10^0])
+%saveas(gcf, ['convergence-', name, '-position.png'])
+exportgraphics(gcf,['convergence-', name, '-position.png'],'Resolution',300)
 
 end
 

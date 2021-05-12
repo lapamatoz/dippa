@@ -87,7 +87,7 @@ for q = 1:6
     gradMNoLine(q).problem('changeIter') = 0;
     gradMNoLine(q).problem('h2Step') = 'no';
     gradMNoLine(q).problem('staticShape') = [];
-    gradMNoLine(q).name = "Gradient method NoLine";
+    gradMNoLine(q).name = "Gradient method";
     if q == 1 || q == 4
         gradMNoLine(q).problem('box') = bigbox;
         gradMNoLine(q).name = join([gradMNoLine(q).name, "bigBox"]);

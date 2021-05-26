@@ -16,11 +16,15 @@ smabox.height = 1350 / 100;
 smabox.width = 1400 / 100;
 smabox.type = 'rectangle';
 
+caps = shape;
+caps.height = 275 / 100 * 1.2;
+caps.width  = 455 / 100 * 1.5;
+
 q = 1;
 oneShoppingCart = resultsAnalysis;
 for boxSize = 1:3
     oneShoppingCart(q) = resultsAnalysis;
-    oneShoppingCart(q).name = "One shopping cart, placed randomly";
+    oneShoppingCart(q).name = "One shopping cart, placed randomly, bigger";
     oneShoppingCart(q).name = join([oneShoppingCart(q).name, "box-", num2str(boxSize)]);
     
     oneShoppingCart(q).problem = containers.Map;
@@ -29,7 +33,8 @@ for boxSize = 1:3
     oneShoppingCart(q).problem('squared') = 'no';
     oneShoppingCart(q).problem('changeIter') = 0;
     oneShoppingCart(q).problem('h2Step') = 'diminishing';
-    oneShoppingCart(q).problem('shape1') = oneShoppingCart(q).problem('shape1').capsule;
+    oneShoppingCart(q).problem('shape1') = caps;
+    oneShoppingCart(q).problem('shape2') = caps;
     sc1 = oneShoppingCart(q).problem('staticShape');
     sc1.static = false;
     
@@ -52,9 +57,9 @@ end
 
 q = 1;
 twoShoppingCarts = resultsAnalysis;
-for boxSize = 1:3
+for boxSize = 1:2
     twoShoppingCarts(q) = resultsAnalysis;
-    twoShoppingCarts(q).name = "Two shopping carts, placed randomly";
+    twoShoppingCarts(q).name = "Two shopping carts, placed randomly, bigger";
     twoShoppingCarts(q).name = join([twoShoppingCarts(q).name, "box-", num2str(boxSize)]);
     
     twoShoppingCarts(q).problem = containers.Map;
@@ -63,7 +68,8 @@ for boxSize = 1:3
     twoShoppingCarts(q).problem('squared') = 'no';
     twoShoppingCarts(q).problem('changeIter') = 0;
     twoShoppingCarts(q).problem('h2Step') = 'diminishing';
-    twoShoppingCarts(q).problem('shape1') = twoShoppingCarts(q).problem('shape1').capsule;
+    twoShoppingCarts(q).problem('shape1') = caps;
+    twoShoppingCarts(q).problem('shape2') = caps;
     sc1 = twoShoppingCarts(q).problem('staticShape');
     sc1.static = false;
     
@@ -84,9 +90,9 @@ end
 
 q = 1;
 threeShoppingCarts = resultsAnalysis;
-for boxSize = 1:3
+for boxSize = 1:1
     threeShoppingCarts(q) = resultsAnalysis;
-    threeShoppingCarts(q).name = "Three shopping carts, placed randomly";
+    threeShoppingCarts(q).name = "Three shopping carts, placed randomly, bigger";
     threeShoppingCarts(q).name = join([threeShoppingCarts(q).name, "box-", num2str(boxSize)]);
     
     threeShoppingCarts(q).problem = containers.Map;
@@ -95,7 +101,8 @@ for boxSize = 1:3
     threeShoppingCarts(q).problem('squared') = 'no';
     threeShoppingCarts(q).problem('changeIter') = 0;
     threeShoppingCarts(q).problem('h2Step') = 'diminishing';
-    threeShoppingCarts(q).problem('shape1') = threeShoppingCarts(q).problem('shape1').capsule;
+    threeShoppingCarts(q).problem('shape1') = caps;
+    threeShoppingCarts(q).problem('shape2') = caps;
     sc1 = threeShoppingCarts(q).problem('staticShape');
     sc1.static = false;
     
@@ -114,7 +121,8 @@ for boxSize = 1:3
     q = q+1;
 end
 
-r = 0;
+r = 2;
+r1 = r;
 
 load = true;
 
@@ -186,6 +194,90 @@ for q = 1:length(threeShoppingCarts)
     m(q) = m(q)-1;
     disp(['q = ', num2str(q), ': ', num2str(m(q))]);
 end
+
+
+
+%%% NOT RANDOMIZED
+
+cyclicShoppingCart = resultsAnalysis;
+for q = 1:6
+    cyclicShoppingCart(q) = resultsAnalysis;
+    cyclicShoppingCart(q).problem = containers.Map;
+    cyclicShoppingCart(q) = cyclicShoppingCart(q).initialize();
+    cyclicShoppingCart(q).problem('method2') = @(P,p)P.optimizeCyclic('triangle',p);
+    cyclicShoppingCart(q).problem('squared') = 'no';
+    cyclicShoppingCart(q).problem('changeIter') = 0;
+    cyclicShoppingCart(q).problem('h2Step') = 'diminishing';
+    cyclicShoppingCart(q).problem("objectPlacement") = "anywhere";
+    cyclicShoppingCart(q).problem("staticObjectPlacement") = "leaveBe"; %"anywhere";
+    
+    cyclicShoppingCart(q).name = "New Algorithm Shopping Carts";
+    if q == 1 || q == 4
+        cyclicShoppingCart(q).problem('box') = bigbox;
+        cyclicShoppingCart(q).name = join([cyclicShoppingCart(q).name, "bigBox"]);
+    elseif q == 2 || q == 5
+        cyclicShoppingCart(q).problem('box') = midbox;
+        cyclicShoppingCart(q).name = join([cyclicShoppingCart(q).name, "midBox"]);
+    elseif q == 3 || q == 6
+        cyclicShoppingCart(q).problem('box') = smabox;
+        cyclicShoppingCart(q).name = join([cyclicShoppingCart(q).name, "smallBox"]);
+    end
+    cyclicShoppingCart(q).problem('shape1') = caps;
+    cyclicShoppingCart(q).problem('shape2') = caps;
+    if q<=3
+        r = cyclicShoppingCart(q).problem("staticShape");
+        B = cyclicShoppingCart(q).problem('box');
+        shoppingCartWidth = r.width;
+        r.width = r.height;
+        r.height = shoppingCartWidth;
+        r.position = [B.width/2  -  r.width/2,...
+                     -B.height/2 + r.height/2];
+        cyclicShoppingCart(q).problem("staticShape") = r;
+        cyclicShoppingCart(q).name = join([cyclicShoppingCart(q).name, "horz bigger"]);
+    else
+        r = cyclicShoppingCart(q).problem("staticShape");
+        B = cyclicShoppingCart(q).problem('box');
+        r.position = [B.width/2  -  r.width/2,...
+                     -B.height/2 + r.height/2];
+        cyclicShoppingCart(q).problem("staticShape") = r;
+        cyclicShoppingCart(q).name = join([cyclicShoppingCart(q).name, "vert bigger"]);
+    end
+end
+
+if load
+    for q = 1:6
+        cyclicShoppingCart(q) = cyclicShoppingCart(q).load(cyclicShoppingCart(q).name);
+    end
+end
+
+maxLen = 0;
+for q = 1:6
+    maxLen = max(maxLen, length(cyclicShoppingCart(q).res));
+end
+
+for q = 1:6
+    cyclicShoppingCart(q) = cyclicShoppingCart(q).simulate(min(3*r1, maxLen + r1 - length(cyclicShoppingCart(q).res)),"no");
+    cyclicShoppingCart(q).save();
+end
+
+mS = [];
+for q = 1:length(cyclicShoppingCart)
+    mS(q) = 0;
+    for w = 1:length(cyclicShoppingCart(q).res)
+        mS(q) = max(mS(q), length(cyclicShoppingCart(q).res{w}));
+    end
+    mS(q) = mS(q)-1;
+    disp(['q = ', num2str(q), ': ', num2str(mS(q))]);
+end
+
+figure; hold on;
+bar(1:3:6,mS(mod(1:6,3)==1))
+bar(1:3:6,mS(mod(1:6,3)==2))
+bar(1:3:6,mS(mod(1:6,3)==0))
+xlabel("Shopping cart orientation (vertical / horizontal)")
+ylabel("Max persons")
+legend("Big box", "Mid box", "Small box", 'Location', 'southwest')
+title("One shopping cart")
 
 % One cart
 % q = 1: 25

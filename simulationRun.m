@@ -73,8 +73,8 @@ end
 
 %cyclic(1).plotTwo([BFGS(1),Matlab(1)]);
 
-BFGS(1).plotTwo(BFGSNoLine(1));
-gradM(1).plotTwo(gradMNoLine(1));
+%BFGS(1).plotTwo(BFGSNoLine(1));
+%gradM(1).plotTwo(gradMNoLine(1));
     
 % Matlab(1).plot('Progression of cyclic Matlab m., just capsules',true)
 % cyclic(1).plot('Progression of new cyclic m., just capsules',true)

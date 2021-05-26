@@ -8,6 +8,7 @@
 
 scenario = 1; % 1 to 3
 save1 = true;
+zoomfactor = 1.1;
 
 % p-plots
 %big
@@ -71,6 +72,9 @@ if save1
 end
 
 cyclic(scenario).Pbest(1).drawProblem(false);
+w = cyclic(scenario).problem('box').width;
+h = cyclic(scenario).problem('box').height;
+axis([-w/2 w/2 -h/2 h/2]*zoomfactor)
 figuresize(14, 9, 'cm')
 if save1
     saveas(gcf, ['cyclic-arrangement-capsules-',num2str(scenario),'.pdf']);

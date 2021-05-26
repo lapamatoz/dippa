@@ -89,7 +89,7 @@ b(1).FaceColor = barcolors(1,:);
 b(2).FaceColor = barcolors(2,:);
 b(3).FaceColor = barcolors(3,:);
 
-legend("Gradient method","BFGS","Cyclic pl. m. (Matlab's solver)",'Location','northwest')
+legend("Gradient method","BFGS","CPM (Matlab's solver)",'Location','northwest')
 ylabel("Probability")
 xlabel("Simulation result")
 title(titletxt)
@@ -143,7 +143,7 @@ b(2).FaceColor = barcolors(2,:);
 b(3).FaceColor = barcolors(3,:);
 b(4).FaceColor = barcolors(4,:);
 
-legend("Gradient method","BFGS","Cyclic pl. m. (Matlab's solver)","Cyclic pl. m. (new line s.)",'Location','northwest')
+legend("Gradient method","BFGS","CPM (Matlab's solver)","CPM (QLS)",'Location','northwest')
 ylabel("Probability")
 xlabel("Simulation result")
 title(titletxt)
@@ -208,7 +208,7 @@ b(2).FaceColor = barcolors(2,:);
 b(3).FaceColor = barcolors(3,:);
 b(4).FaceColor = barcolors(4,:);
 
-legend("Gradient method","BFGS","Cyclic pl. m. (Matlab's solver)","Cyclic pl. m. (new line s.)",'Location','northwest')
+legend("Gradient method","BFGS","CPM (Matlab's solver)","CPM (QLS)",'Location','northwest')
 ylabel("Probability")
 xlabel("Simulation result")
 title(titletxt)

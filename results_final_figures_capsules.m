@@ -8,6 +8,7 @@
 
 scenario = 3; % 1 to 3
 save1 = true;
+zoomfactor = 1.1;
 
 % p-plots
 %big
@@ -89,18 +90,27 @@ end
 %close all
 
 gradM(scenario).Pbest(1).drawProblem(false);
+w = gradM(scenario).problem('box').width;
+h = gradM(scenario).problem('box').height;
+axis([-w/2 w/2 -h/2 h/2]*zoomfactor)
 figuresize(14, 9, 'cm')
 if save1
     saveas(gcf, ['gradM-arrangement-capsules-',num2str(scenario),'.pdf']);
 end
 
 BFGS(scenario).Pbest(1).drawProblem(false);
+w = BFGS(scenario).problem('box').width;
+h = BFGS(scenario).problem('box').height;
+axis([-w/2 w/2 -h/2 h/2]*zoomfactor)
 figuresize(14, 9, 'cm')
 if save1
     saveas(gcf, ['BFGS-arrangement-capsules-',num2str(scenario),'.pdf']);
 end
 
 Matlab(scenario).Pbest(1).drawProblem(false);
+w = Matlab(scenario).problem('box').width;
+h = Matlab(scenario).problem('box').height;
+axis([-w/2 w/2 -h/2 h/2]*zoomfactor)
 figuresize(14, 9, 'cm')
 if save1
     saveas(gcf, ['Matlab-arrangement-capsules-',num2str(scenario),'.pdf']);

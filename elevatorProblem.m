@@ -553,7 +553,7 @@ classdef elevatorProblem
             end
             
             if obj.box.type == "rectangle"
-                obj.box.drawShape(true, [1,1,1], 'k', 1);
+                obj.box.drawShape(true, [1,1,1], 'k', 1.5);
                 right = obj.box.width/2 + obj.box.position(1);
                 left = -obj.box.width/2 + obj.box.position(1);
                 height = obj.box.height/2 + obj.box.position(2);

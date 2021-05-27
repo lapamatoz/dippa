@@ -11,11 +11,11 @@ barcolors = [defaultPlotColors(1).^0.7; .9*defaultPlotColors(2); defaultPlotColo
 
 
 if scen == 1
-    titletxt = "Box: 1700 x 2350 mm";
+    titletxt = "2350 x 1700 mm lift";
 elseif scen == 2
-    titletxt = "Box: 1400 x 2000 mm";
+    titletxt = "2000 x 1400 mm lift";
 elseif scen == 3
-    titletxt = "Box: 1350 x 1400 mm";
+    titletxt = "1350 x 1400 mm lift";
 end
 
 gradMlengths = zeros(1,length(gradM(scen).res));
@@ -159,11 +159,11 @@ end
 scen=3+scen
 
 if scen == 4
-    titletxt = "Box: 1700 x 2350 mm";
+    titletxt = "2350 x 1700 mm lift";
 elseif scen == 5
-    titletxt = "Box: 1400 x 2000 mm";
+    titletxt = "2000 x 1400 mm lift";
 elseif scen == 6
-    titletxt = "Box: 1350 x 1400 mm";
+    titletxt = "1350 x 1400 mm lift";
 end
 
 gradMlengths = zeros(1,length(gradM(scen).res));

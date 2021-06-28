@@ -3,8 +3,8 @@
 %sum(eig(HessianM))/2
 
 %plotPerformance(@(x)quadraticfun(x), 30, 30, 140, [-3,11], [-11,1], [10;-10], [0;0], 0, 'quadratic');
-%plotPerformance(@(x)expfun(x), 31, 22, 100, [-3.5,1], [-4.5,.5], [-2; -4], [-log(2) / 2 - 1/20; 0], 2*sqrt(2) / exp(3/20), 'exp');
-plotPerformance(@(x)rosenbrockfun(x), 1050/3, 800/3, 180, [-0.7,1.5], [-1.2,1.5], [0.5;-1], [1;1], 0, 'rosenbrock');
+%plotPerformance(@(x)expfun(x), 31, 22, 100, [-3.5,1.5], [-4.5,.5], [-2; -4], [-log(2) / 2 - 1/20; 0], 2*sqrt(2) / exp(3/20), 'exp');
+plotPerformance(@(x)rosenbrockfun(x), 10500, 8000, 180, [-0.7-0.25,1.5-0.25], [-1.2,1.5], [0.5;-1], [1;1], 0, 'rosenbrock');
 %close all hidden
 % Rosenbrock with steps 10500, 8000 takes a lot of time
 
@@ -149,11 +149,11 @@ figureDim = [8, 6];
 xlabel('{\itx}_1')
 ylabel('{\itx}_2')
 
-if name == "rosenbrock"
-    axis([0.22 0.35 0.02 0.14])
-    figuresize(figureDim(1)*1.8, figureDim(2)*1.8, 'cm')
-    exportgraphics(gcf,['convergence-', name, '-terrain-zoomed.png'],'Resolution',300)
-end
+%if name == "rosenbrock"
+%    axis([0.22 0.35 0.02 0.14])
+%    figuresize(figureDim(1)*1.8, figureDim(2)*1.8, 'cm')
+%    exportgraphics(gcf,['convergence-', name, '-terrain-zoomed.png'],'Resolution',300)
+%end
 
 if name == "quadratic"
     loc = 'southwest';
@@ -164,8 +164,8 @@ else
 end
 leg = legend([p2,p3,p4],...
         {'Exact line seacrch',... %'Newton-like line search',...
-         'Quadratic line search, {\ith}_1',...
-         'Quadratic line search, {\ith}_2'},...
+         'Quadratic line search, {\ith}_{{\itk},1}',...
+         'Quadratic line search, {\ith}_{{\itk},2}'},...
         'Location', loc);
 
 figuresize(figureDim(1)*1.8, figureDim(2)*1.8, 'cm')
